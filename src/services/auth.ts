@@ -45,7 +45,7 @@ class AuthService {
     const workspace: WorkspaceSettings = {
       id: workspaceId,
       name: formData.workspaceName,
-      defaultFolderPath: formData.workspacePath || '/Users/yourname/Documents/TokenizationProjects',
+      defaultFolder: formData.workspaceFolder || '/Users/yourname/Documents/TokenizationProjects',
       createdAt: new Date()
     };
 
@@ -53,6 +53,7 @@ class AuthService {
       apiKey: formData.apiKey,
       isApiKeyValid: true,
       currentWorkspaceId: workspaceId,
+      workspace: workspace, // Add current workspace reference
       workspaces: [workspace],
       userProfile,
       theme: 'dark',

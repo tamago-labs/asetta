@@ -1,0 +1,14 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "identifier": "file-system",
+  "description": "File system access for project management",
+  "windows": ["main"],
+  "permissions": [
+    "fs:allow-read-dir",
+    "fs:allow-read-file",
+    "fs:allow-write-file",
+    "fs:allow-exists",
+    "core:path:default",
+    "dialog:allow-open"
+  ]
+}

@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { ChatArea } from './components/ChatArea';
 import { ProjectPanel } from './components/ProjectPanel';
+import { FileManager } from './components/FileManager';
+import { FileViewer } from './components/FileViewer';
 import { WelcomeScreen } from './components/setup/WelcomeScreen';
 import { SettingsModal } from './components/setup/SettingsModal';
 import { ConnectionStatus, OnboardingManager } from './components/auth/AuthComponents';
 import { authService } from './services/auth';
 import { agents, messages, currentProject } from './data/mockData';
 import { AppSettings, SetupFormData } from './types/auth';
+import { FileInfo } from './types/files';
 
 function App() {
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
@@ -16,6 +19,11 @@ function App() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  
+  // File management state
+  const [projectPath, setProjectPath] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<FileInfo | null>(null);
+  const [showFileManager, setShowFileManager] = useState(true);
 
   useEffect(() => {
     const loadSettings = () => {
@@ -23,6 +31,7 @@ function App() {
       if (savedSettings && authService.isAuthenticated()) {
         setSettings(savedSettings);
         setIsAuthenticated(true);
+        setProjectPath(savedSettings.workspace?.defaultFolder || null);
         authService.updateLastLogin();
       }
       setIsLoading(false);
@@ -37,6 +46,7 @@ function App() {
     authService.saveSettings(newSettings);
     setSettings(newSettings);
     setIsAuthenticated(true);
+    setProjectPath(formData.workspaceFolder || null);
   };
 
   const handleSettingsUpdate = (updatedSettings: AppSettings) => {
@@ -53,6 +63,8 @@ function App() {
     setShowSettings(false);
     setShowOnboarding(false);
     setSelectedAgentId(null);
+    setProjectPath(null);
+    setSelectedFile(null);
   };
 
   const handleAgentSelect = (agentId: string) => {
@@ -66,6 +78,14 @@ function App() {
 
   const handleStartOnboarding = () => {
     setShowOnboarding(true);
+  };
+
+  const handleFileSelect = (file: FileInfo) => {
+    setSelectedFile(file);
+  };
+
+  const handleCloseFile = () => {
+    setSelectedFile(null);
   };
 
   if (isLoading) {
@@ -96,19 +116,29 @@ function App() {
           />
         </div>
         
-        {/* Chat Area */}
+        {/* Chat Area or File Viewer */}
         <div className="flex-1 h-full" data-onboarding="chat">
-          <ChatArea 
-            messages={messages}
-            agents={agents}
-            selectedAgentId={selectedAgentId}
-          />
+          {selectedFile ? (
+            <FileViewer 
+              selectedFile={selectedFile}
+              onClose={handleCloseFile}
+            />
+          ) : (
+            <ChatArea 
+              messages={messages}
+              agents={agents}
+              selectedAgentId={selectedAgentId}
+            />
+          )}
         </div>
         
-        {/* Project Panel */}
+        {/* File Manager (replacing Project Panel) */}
         <div className="w-80 h-full" data-onboarding="project">
-          <ProjectPanel 
-            project={currentProject}
+          <FileManager
+            projectPath={projectPath}
+            onFileSelect={handleFileSelect}
+            selectedFile={selectedFile}
+            onProjectPathChange={setProjectPath}
           />
         </div>
       </div>

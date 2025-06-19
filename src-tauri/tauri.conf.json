@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Build Your Dream App",
         "width": 1400,
         "height": 900,

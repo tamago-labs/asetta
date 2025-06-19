@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { User, Building2, Key, Folder, ArrowRight, Check, AlertCircle } from 'lucide-react';
+import { User, Building2, Key, Folder, ArrowRight, Check, AlertCircle, FolderPlus } from 'lucide-react';
 import { SetupFormData } from '../../types/auth';
 import { claudeApiService } from '../../services/claude';
+import { TauriFileService } from '../../services/fileService';
 
 interface WelcomeScreenProps {
   onSetupComplete: (settings: SetupFormData) => void;
@@ -15,7 +16,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
     userEmail: '',
     company: '',
     workspaceName: 'My Tokenization Projects',
-    workspacePath: '',
+    workspaceFolder: '',
     agreeToTerms: true // Auto-agree since it's a solo app
   });
   const [isValidatingApi, setIsValidatingApi] = useState(false);
@@ -72,11 +73,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
 
   const handleFolderSelect = async () => {
     try {
-      // Use a default path or let user type it in
-      const defaultPath = '/Users/yourname/Documents/TokenizationProjects';
-      setFormData(prev => ({ ...prev, workspacePath: defaultPath }));
+      const selectedPath = await TauriFileService.selectFolder();
+      if (selectedPath) {
+        setFormData(prev => ({ ...prev, workspaceFolder: selectedPath }));
+      }
     } catch (error) {
-      console.error('Failed to set folder path:', error);
+      console.error('Failed to select folder:', error);
+      // Fallback to a default path
+      const defaultPath = process.platform === 'win32' 
+        ? 'C:\\Users\\Documents\\TokenizationProjects'
+        : '~/Documents/TokenizationProjects';
+      setFormData(prev => ({ ...prev, workspaceFolder: defaultPath }));
     }
   };
 
@@ -85,7 +92,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
       case 0: return true; // Welcome step
       case 1: return formData.userName.trim().length > 0; // Name required
       case 2: return apiValidationResult?.isValid || false; // API key must be valid
-      case 3: return formData.workspaceName.trim() && formData.workspacePath.trim(); // Workspace required
+      case 3: return formData.workspaceName.trim() && formData.workspaceFolder.trim(); // Workspace required
       default: return false;
     }
   };
@@ -269,16 +276,18 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
                 <div className="flex gap-3">
                   <input
                     type="text"
-                    value={formData.workspacePath}
-                    onChange={(e) => setFormData(prev => ({ ...prev, workspacePath: e.target.value }))}
+                    value={formData.workspaceFolder}
+                    onChange={(e) => setFormData(prev => ({ ...prev, workspaceFolder: e.target.value }))}
                     placeholder="/path/to/your/projects"
                     className="flex-1 px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    readOnly
                   />
                   <button
                     onClick={handleFolderSelect}
-                    className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium whitespace-nowrap"
+                    className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium whitespace-nowrap flex items-center gap-2"
                   >
-                    Use Default
+                    <FolderPlus size={16} />
+                    Browse
                   </button>
                 </div>
                 <p className="text-slate-400 text-sm mt-2">

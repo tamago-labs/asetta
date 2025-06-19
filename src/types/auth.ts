@@ -11,7 +11,7 @@ export interface UserProfile {
 export interface WorkspaceSettings {
   id: string;
   name: string;
-  defaultFolderPath: string;
+  defaultFolder: string;  // Changed from defaultFolderPath
   description?: string;
   createdAt: Date;
 }
@@ -20,6 +20,7 @@ export interface AppSettings {
   apiKey: string;
   isApiKeyValid: boolean;
   currentWorkspaceId: string;
+  workspace?: WorkspaceSettings;  // Add optional workspace reference
   workspaces: WorkspaceSettings[];
   userProfile: UserProfile;
   theme: 'dark' | 'light';
@@ -51,6 +52,6 @@ export interface SetupFormData {
   userEmail: string;
   company?: string;
   workspaceName: string;
-  workspacePath: string;
+  workspaceFolder: string;  // Changed from workspacePath
   agreeToTerms: boolean;
 }
