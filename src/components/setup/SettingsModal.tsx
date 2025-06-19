@@ -11,13 +11,14 @@ import {
   EyeOff,
   Check,
   AlertCircle,
-  Plus,
+  FolderPlus,
   Trash2,
   RotateCcw
 } from 'lucide-react';
 import { AppSettings, WorkspaceSettings } from '../../types/auth';
 import { storageService } from '../../services/storage';
 import { claudeApiService } from '../../services/claude';
+import { TauriFileService } from '../../services/fileService';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -39,9 +40,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [showApiKey, setShowApiKey] = useState(false);
   const [isValidatingApi, setIsValidatingApi] = useState(false);
   const [apiValidationResult, setApiValidationResult] = useState<{ isValid: boolean; error?: string } | null>(null);
-  const [newWorkspaceName, setNewWorkspaceName] = useState('');
-  const [newWorkspacePath, setNewWorkspacePath] = useState('');
-  const [showNewWorkspaceForm, setShowNewWorkspaceForm] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
@@ -58,13 +56,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setApiValidationResult(null);
 
     try {
-      // const result = await claudeApiService.validateApiKey(localSettings.apiKey);
-      // setApiValidationResult(result);
-
-      // if (result.isValid) {
-      //   setLocalSettings(prev => ({ ...prev, isApiKeyValid: true }));
-      // }
-
       setApiValidationResult({
         isValid: true
       })
@@ -131,45 +122,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     event.target.value = '';
   };
 
-  const handleAddWorkspace = () => {
-    if (!newWorkspaceName.trim() || !newWorkspacePath.trim()) return;
-
-    const newWorkspace: WorkspaceSettings = {
-      id: Date.now().toString(),
-      name: newWorkspaceName,
-      defaultFolderPath: newWorkspacePath,
-      createdAt: new Date()
-    };
-
-    setLocalSettings(prev => ({
-      ...prev,
-      workspaces: [...prev.workspaces, newWorkspace]
-    }));
-
-    setNewWorkspaceName('');
-    setNewWorkspacePath('');
-    setShowNewWorkspaceForm(false);
-  };
-
-  const handleRemoveWorkspace = (workspaceId: string) => {
-    if (localSettings.workspaces.length === 1) {
-      alert('You must have at least one workspace.');
-      return;
+  // Handle workspace folder selection
+  const handleSelectWorkspaceFolder = async () => {
+    try {
+      const selectedPath = await TauriFileService.selectFolder();
+      if (selectedPath && localSettings.workspace) {
+        const updatedWorkspace = {
+          ...localSettings.workspace,
+          defaultFolder: selectedPath
+        };
+        
+        setLocalSettings(prev => ({
+          ...prev,
+          workspace: updatedWorkspace,
+          workspaces: prev.workspaces.map(w => 
+            w.id === updatedWorkspace.id ? updatedWorkspace : w
+          )
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to select folder:', error);
     }
-
-    setLocalSettings(prev => ({
-      ...prev,
-      workspaces: prev.workspaces.filter(w => w.id !== workspaceId),
-      currentWorkspaceId: prev.currentWorkspaceId === workspaceId
-        ? prev.workspaces.find(w => w.id !== workspaceId)?.id || prev.workspaces[0].id
-        : prev.currentWorkspaceId
-    }));
   };
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'api', label: 'API Settings', icon: Key },
-    { id: 'workspaces', label: 'Workspaces', icon: Folder },
+    { id: 'workspace', label: 'Workspace', icon: Folder },
     { id: 'general', label: 'General', icon: Settings }
   ];
 
@@ -327,90 +306,84 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             )}
 
-            {activeTab === 'workspaces' && (
+            {activeTab === 'workspace' && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">Workspaces</h3>
-                  <button
-                    onClick={() => setShowNewWorkspaceForm(true)}
-                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm flex items-center gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Workspace
-                  </button>
-                </div>
-
-                {showNewWorkspaceForm && (
-                  <div className="bg-slate-700 p-4 rounded-lg space-y-4">
-                    <h4 className="text-white font-medium">New Workspace</h4>
-                    <div className="grid grid-cols-1 gap-4">
-                      <input
-                        type="text"
-                        placeholder="Workspace name"
-                        value={newWorkspaceName}
-                        onChange={(e) => setNewWorkspaceName(e.target.value)}
-                        className="px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-blue-500"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Folder path"
-                        value={newWorkspacePath}
-                        onChange={(e) => setNewWorkspacePath(e.target.value)}
-                        className="px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-blue-500"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleAddWorkspace}
-                        className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm"
-                      >
-                        Add
-                      </button>
-                      <button
-                        onClick={() => setShowNewWorkspaceForm(false)}
-                        className="px-3 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded text-sm"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  {localSettings.workspaces.map((workspace) => (
-                    <div
-                      key={workspace.id}
-                      className={`p-4 rounded-lg border ${workspace.id === localSettings.currentWorkspaceId
-                          ? 'bg-blue-600/20 border-blue-500'
-                          : 'bg-slate-700 border-slate-600'
-                        }`}
-                    >
-                      <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-white">Current Workspace</h3>
+                
+                {localSettings.workspace ? (
+                  <div className="bg-slate-700 p-6 rounded-lg">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <Folder className="w-8 h-8 text-blue-400" />
                         <div>
-                          <h4 className="text-white font-medium">{workspace.name}</h4>
-                          <p className="text-slate-300 text-sm">{workspace.defaultFolderPath}</p>
-                          <p className="text-slate-400 text-xs">Created: {new Date(workspace.createdAt).toLocaleDateString()}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          {workspace.id !== localSettings.currentWorkspaceId && (
-                            <button
-                              onClick={() => setLocalSettings(prev => ({ ...prev, currentWorkspaceId: workspace.id }))}
-                              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
-                            >
-                              Set Active
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleRemoveWorkspace(workspace.id)}
-                            className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
-                          >
-                            Remove
-                          </button>
+                          <h4 className="text-white font-medium text-lg">{localSettings.workspace.name}</h4>
+                          <p className="text-slate-300 text-sm">Active project workspace</p>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Workspace Name</label>
+                        <input
+                          type="text"
+                          value={localSettings.workspace.name}
+                          onChange={(e) => {
+                            if (localSettings.workspace) {
+                              const updatedWorkspace = { ...localSettings.workspace, name: e.target.value };
+                              setLocalSettings(prev => ({
+                                ...prev,
+                                workspace: updatedWorkspace,
+                                workspaces: prev.workspaces.map(w => 
+                                  w.id === updatedWorkspace.id ? updatedWorkspace : w
+                                )
+                              }));
+                            }
+                          }}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Project Folder</label>
+                        <div className="flex gap-3">
+                          <input
+                            type="text"
+                            value={localSettings.workspace.defaultFolder}
+                            readOnly
+                            className="flex-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white"
+                          />
+                          <button
+                            onClick={handleSelectWorkspaceFolder}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center gap-2"
+                          >
+                            <FolderPlus size={16} />
+                            Change
+                          </button>
+                        </div>
+                        <p className="text-slate-400 text-sm mt-2">
+                          All your tokenization projects will be stored in this folder
+                        </p>
+                      </div>
+
+                      <div className="bg-slate-800 p-4 rounded-lg">
+                        <h5 className="text-white font-medium mb-2">Workspace Info</h5>
+                        <div className="text-sm text-slate-300 space-y-1">
+                          <div>Created: {new Date(localSettings.workspace.createdAt).toLocaleDateString()}</div>
+                          <div>Path: {localSettings.workspace.defaultFolder}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-slate-700 p-6 rounded-lg text-center">
+                    <Folder className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+                    <h4 className="text-white font-medium mb-2">No Workspace Found</h4>
+                    <p className="text-slate-400 text-sm">
+                      Something went wrong. Please reset the app to set up a new workspace.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 

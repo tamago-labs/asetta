@@ -52,6 +52,10 @@ function App() {
   const handleSettingsUpdate = (updatedSettings: AppSettings) => {
     setSettings(updatedSettings);
     authService.saveSettings(updatedSettings);
+    // Update project path if workspace folder changed
+    if (updatedSettings.workspace?.defaultFolder !== projectPath) {
+      setProjectPath(updatedSettings.workspace?.defaultFolder || null);
+    }
   };
 
   const handleResetApp = () => {

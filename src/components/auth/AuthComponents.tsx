@@ -11,17 +11,13 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
   onSettingsClick
 }) => {
   return (
-    <div className="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg">
-      <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
-      <span className="text-xs text-slate-400">
-        {isConnected ? 'Claude Connected' : 'Not Connected'}
-      </span>
+    <div className="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg"> 
       <button
         onClick={onSettingsClick}
         className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"
         title="Settings"
       >
-        <SettingsIcon className="w-3 h-3" />
+        <SettingsIcon className="w-4 h-4"/>
       </button>
     </div>
   );
@@ -213,7 +209,7 @@ export const OnboardingManager: React.FC<OnboardingManagerProps> = ({
     <>
       {/* Semi-transparent overlay */}
       <div className="fixed inset-0 bg-black bg-opacity-30 z-50" onClick={handleComplete} />
-      
+
       {/* Highlight the target element */}
       {targetElement && (
         <div
@@ -230,7 +226,7 @@ export const OnboardingManager: React.FC<OnboardingManagerProps> = ({
           }}
         />
       )}
-      
+
       <OnboardingTooltip
         isVisible={true}
         title={currentStepData.title}

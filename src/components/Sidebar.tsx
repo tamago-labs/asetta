@@ -81,25 +81,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ agents, selectedAgentId, onAge
     <div className="w-full h-screen bg-slate-800 border-r border-slate-700 flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-slate-700 flex-shrink-0">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-0">
           <div>
             <h1 className="text-white font-bold text-lg">Build Your Dream</h1>
-            <p className="text-slate-400 text-sm">AI Tokenization Team</p>
+            <p className="text-slate-400 text-sm">v.0.1.0</p>
           </div>
-          <button className="p-1 text-slate-400 hover:text-white hover:bg-slate-700 rounded transition-colors">
-            <Settings size={16} />
-          </button>
+           
         </div>
-        
-        {/* Search */}
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search agents..."
-            className="w-full bg-slate-700 border border-slate-600 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-          />
-        </div>
+         
       </div>
 
       {/* General Channel */}
@@ -138,22 +127,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ agents, selectedAgentId, onAge
         {renderAgentGroup('Busy', busyAgents)}
         {renderAgentGroup('Offline', offlineAgents)}
       </div>
-
-      {/* Footer */}
-      <div className="p-3 border-t border-slate-700 flex-shrink-0">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center space-x-2 text-slate-400">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span className="text-xs">All systems operational</span>
-          </div>
-          <button className="p-1 text-slate-400 hover:text-white hover:bg-slate-700 rounded transition-colors">
-            <Plus size={14} />
-          </button>
-        </div>
-        <div className="text-xs text-slate-500">
-          {onlineAgents.length} of {agents.length} agents active
-        </div>
-      </div>
+ 
     </div>
   );
 };

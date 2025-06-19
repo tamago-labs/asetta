@@ -193,7 +193,7 @@ export const FileManager: React.FC<FileManagerProps> = ({
       {/* Header */}
       <div className="p-4 border-b border-slate-700">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-white font-semibold text-lg">File Explorer</h2>
+          <h2 className="text-white font-semibold text-lg">File Explorer </h2>
           <div className="flex items-center space-x-1">
             <button
               onClick={handleRefresh}
