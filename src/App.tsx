@@ -6,11 +6,16 @@ import { FileManager } from './components/FileManager';
 import { FileViewer } from './components/FileViewer';
 import { WelcomeScreen } from './components/setup/WelcomeScreen';
 import { SettingsModal } from './components/setup/SettingsModal';
+import { MCPManagerModal } from './components/MCPManagerModal';
 import { ConnectionStatus, OnboardingManager } from './components/auth/AuthComponents';
 import { authService } from './services/auth';
-import { agents, messages, currentProject } from './data/mockData';
+import { agentService } from './services/agentService';
+import { mcpService } from './services/mcpService';
+import { agents, messages, currentProject } from './data/agentTemplates';
 import { AppSettings, SetupFormData } from './types/auth';
 import { FileInfo } from './types/files';
+import { Agent } from './types/agent';
+import { Server } from 'lucide-react';
 
 function App() {
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
@@ -19,11 +24,16 @@ function App() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showMCPManager, setShowMCPManager] = useState(false);
   
   // File management state
   const [projectPath, setProjectPath] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileInfo | null>(null);
   const [showFileManager, setShowFileManager] = useState(true);
+
+  // Agent management state
+  const [realAgents, setRealAgents] = useState<Agent[]>([]);
+  const [legacyMode, setLegacyMode] = useState(true);
 
   useEffect(() => {
     const loadSettings = () => {
@@ -40,6 +50,55 @@ function App() {
     const timer = setTimeout(loadSettings, 1000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Load real agents
+  useEffect(() => {
+    const loadAgents = () => {
+      const allAgents = agentService.getAgents();
+      setRealAgents(allAgents);
+      
+      // Switch to real mode if we have real agents
+      if (allAgents.length > 0) {
+        setLegacyMode(false);
+      }
+    };
+
+    loadAgents();
+    
+    // Set up MCP workspace
+    if (projectPath) {
+      mcpService.setWorkspaceRoot(projectPath);
+    }
+  }, [projectPath]);
+
+  const handleAgentCreated = (agentId: string) => {
+    // Refresh agents list
+    const allAgents = agentService.getAgents();
+    setRealAgents(allAgents);
+    setLegacyMode(false);
+    
+    // Select the newly created agent
+    setSelectedAgentId(agentId);
+  };
+
+  const handleAgentRemoved = (agentId: string) => {
+    // Remove the agent
+    agentService.deleteAgent(agentId);
+    
+    // Refresh agents list
+    const allAgents = agentService.getAgents();
+    setRealAgents(allAgents);
+    
+    // If the removed agent was selected, clear selection
+    if (selectedAgentId === agentId) {
+      setSelectedAgentId(null);
+    }
+    
+    // If no agents left, switch back to legacy mode
+    if (allAgents.length === 0) {
+      setLegacyMode(true);
+    }
+  };
 
   const handleSetupComplete = (formData: SetupFormData) => {
     const newSettings = authService.createDefaultSettings(formData);
@@ -92,6 +151,11 @@ function App() {
     setSelectedFile(null);
   };
 
+  // Use real agents if available, otherwise show empty state
+  const currentAgents = legacyMode && realAgents.length === 0 ? [] : realAgents;
+  const currentMessages = legacyMode ? [] : [];
+  const showEmptyState = currentAgents.length === 0;
+
   if (isLoading) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-slate-900">
@@ -114,9 +178,12 @@ function App() {
         {/* Sidebar */}
         <div className="w-64 h-full" data-onboarding="sidebar">
           <Sidebar 
-            agents={agents}
+            agents={currentAgents}
             selectedAgentId={selectedAgentId}
             onAgentSelect={handleAgentSelect}
+            onAgentCreated={handleAgentCreated}
+            onAgentRemoved={handleAgentRemoved}
+            activeFolder={projectPath}
           />
         </div>
         
@@ -129,8 +196,8 @@ function App() {
             />
           ) : (
             <ChatArea 
-              messages={messages}
-              agents={agents}
+              messages={currentMessages}
+              agents={currentAgents}
               selectedAgentId={selectedAgentId}
             />
           )}
@@ -149,10 +216,22 @@ function App() {
 
       {/* Overlay UI Elements */}
       <div className="absolute top-4 right-4 z-30">
-        <ConnectionStatus
-          isConnected={settings.isApiKeyValid}
-          onSettingsClick={() => setShowSettings(true)}
-        />
+        <div className="flex items-center gap-2">
+          {/* MCP Manager Button */}
+          <button
+            onClick={() => setShowMCPManager(true)}
+            className="p-2  hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
+            title="Manage MCP Servers"
+          >
+            <Server className="w-4 h-4" />
+          </button>
+          
+          {/* Connection Status */}
+          <ConnectionStatus
+            isConnected={settings.isApiKeyValid}
+            onSettingsClick={() => setShowSettings(true)}
+          />
+        </div>
       </div>
 
       <div className="absolute bottom-4 left-4 z-30 flex gap-2">
@@ -186,6 +265,12 @@ function App() {
           onComplete={handleOnboardingComplete}
         />
       )}
+
+      {/* MCP Manager Modal */}
+      <MCPManagerModal
+        isOpen={showMCPManager}
+        onClose={() => setShowMCPManager(false)}
+      />
     </div>
   );
 }
