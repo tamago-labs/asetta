@@ -105,9 +105,9 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-900">
+    <div className="w-full h-full flex flex-col bg-slate-900">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-slate-700 bg-slate-800">
+      <div className="px-6 py-4 border-b border-slate-700 bg-slate-800 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {selectedAgentId ? (
@@ -140,7 +140,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         <div className="py-2">
           {filteredMessages.length > 0 ? (
             filteredMessages.map(renderMessage)
@@ -156,7 +156,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
       </div>
 
       {/* Message Input */}
-      <div className="p-4 border-t border-slate-700 bg-slate-800">
+      <div className="p-4 border-t border-slate-700 bg-slate-800 flex-shrink-0">
         <form onSubmit={handleSendMessage}>
           <div className="flex items-end space-x-3">
             <button 

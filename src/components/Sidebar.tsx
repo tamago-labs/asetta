@@ -16,13 +16,6 @@ const statusColors = {
   offline: 'bg-gray-400'
 };
 
-const statusLabels = {
-  online: 'Online',
-  away: 'Away',
-  busy: 'Busy',
-  offline: 'Offline'
-};
-
 export const Sidebar: React.FC<SidebarProps> = ({ agents, selectedAgentId, onAgentSelect }) => {
   const onlineAgents = agents.filter(a => a.status === 'online');
   const awayAgents = agents.filter(a => a.status === 'away');
@@ -37,13 +30,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ agents, selectedAgentId, onAge
         <h3 className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-2 px-3">
           {title} {showCount && `(${agentList.length})`}
         </h3>
-        <div className="space-y-1">
+        <div className="space-y-1 px-2">
           {agentList.map((agent) => (
             <button
               key={agent.id}
               onClick={() => onAgentSelect(agent.id)}
               className={clsx(
-                'w-full mx-2 p-2 rounded-lg text-left transition-all duration-200 group',
+                'w-full p-3 rounded-lg text-left transition-all duration-200 group',
                 'hover:bg-slate-700',
                 selectedAgentId === agent.id 
                   ? 'bg-blue-600 text-white shadow-lg' 
@@ -51,7 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ agents, selectedAgentId, onAge
               )}
             >
               <div className="flex items-center space-x-3">
-                <div className="relative">
+                <div className="relative flex-shrink-0">
                   <div className={clsx(
                     'w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-transform group-hover:scale-105',
                     selectedAgentId === agent.id ? 'bg-white/20' : agent.color
@@ -72,12 +65,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ agents, selectedAgentId, onAge
                     {agent.role}
                   </div>
                 </div>
-                {agent.status !== 'offline' && (
-                  <div className={clsx(
-                    'w-2 h-2 rounded-full',
-                    statusColors[agent.status]
-                  )}></div>
-                )}
+                <div className={clsx(
+                  'w-2 h-2 rounded-full flex-shrink-0',
+                  statusColors[agent.status]
+                )}></div>
               </div>
             </button>
           ))}
@@ -87,9 +78,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ agents, selectedAgentId, onAge
   };
 
   return (
-    <div className="w-64 bg-slate-800 border-r border-slate-700 flex flex-col h-full">
+    <div className="w-full h-screen bg-slate-800 border-r border-slate-700 flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-slate-700">
+      <div className="p-4 border-b border-slate-700 flex-shrink-0">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h1 className="text-white font-bold text-lg">Build Your Dream</h1>
@@ -112,11 +103,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ agents, selectedAgentId, onAge
       </div>
 
       {/* General Channel */}
-      <div className="p-3 border-b border-slate-700">
+      <div className="p-3 border-b border-slate-700 flex-shrink-0">
         <button
           onClick={() => onAgentSelect('')}
           className={clsx(
-            'w-full p-2 rounded-lg text-left transition-all duration-200',
+            'w-full p-3 rounded-lg text-left transition-all duration-200',
             'hover:bg-slate-700',
             !selectedAgentId 
               ? 'bg-blue-600 text-white' 
@@ -127,7 +118,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ agents, selectedAgentId, onAge
             <div className="w-8 h-8 rounded-lg bg-slate-600 flex items-center justify-center text-sm font-medium">
               #
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="font-medium text-sm">general</div>
               <div className={clsx(
                 'text-xs',
@@ -149,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ agents, selectedAgentId, onAge
       </div>
 
       {/* Footer */}
-      <div className="p-3 border-t border-slate-700">
+      <div className="p-3 border-t border-slate-700 flex-shrink-0">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2 text-slate-400">
             <div className="w-2 h-2 bg-green-400 rounded-full"></div>
