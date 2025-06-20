@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { mcpService } from '../services/mcpService';
 import { MCPServerInstance, MCPServerConfig } from '../types/mcp';
+import { LogsPanel } from './LogsPanel';
 
 interface MCPManagerModalProps {
   isOpen: boolean;
@@ -280,14 +281,7 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
                   <div>
                     <h3 className="text-lg font-medium text-white">Running Servers</h3>
                     <p className="text-slate-400 text-sm">Manage your MCP server instances</p>
-                  </div>
-                  <button
-                    onClick={() => setShowAddServer(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Server
-                  </button>
+                  </div> 
                 </div>
               </div>
 
@@ -430,7 +424,7 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
           {activeTab === 'templates' && (
             <div className="h-full overflow-y-auto p-6">
               <div className="mb-6">
-                <h3 className="text-lg font-medium text-white mb-2">Server Templates</h3>
+                <h3 className="text-lg font-medium text-white  ">Server Templates</h3>
                 <p className="text-slate-400 text-sm">Available MCP server templates. Click to add to your servers.</p>
               </div>
 
@@ -497,12 +491,8 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
           )}
 
           {activeTab === 'logs' && (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center text-slate-400">
-                <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium mb-2">MCP Logs</p>
-                <p className="text-sm">Server logs and activity will appear here</p>
-              </div>
+            <div className="h-full">
+              <LogsPanel />
             </div>
           )}
         </div>

@@ -1,18 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
-import { ChatArea } from './components/ChatArea';
-import { ProjectPanel } from './components/ProjectPanel';
+import { ChatArea } from './components/ChatArea'; 
 import { FileManager } from './components/FileManager';
 import { FileViewer } from './components/FileViewer';
 import { WelcomeScreen } from './components/setup/WelcomeScreen';
 import { SettingsModal } from './components/setup/SettingsModal';
 import { MCPManagerModal } from './components/MCPManagerModal';
-import { AddAgentModal } from './components/AddAgentModal';
+import { AddAgentModal } from './components/AddAgentModal'; 
 import { ConnectionStatus, OnboardingManager } from './components/auth/AuthComponents';
 import { authService } from './services/auth';
 import { agentService } from './services/agentService';
-import { mcpService } from './services/mcpService';
-import { agents, messages, currentProject } from './data/agentTemplates';
+import { mcpService } from './services/mcpService'; 
 import { AppSettings, SetupFormData } from './types/auth';
 import { FileInfo } from './types/files';
 import { Agent } from './types/agent';
@@ -178,6 +176,9 @@ function App() {
 
   return (
     <div className="h-screen w-screen bg-slate-900 text-white overflow-hidden">
+      {/* Test component to generate sample logs */}
+      {/* <LogsTestComponent /> */}
+      
       <div className="flex h-full">
         {/* Sidebar */}
         <div className="w-64 h-full" data-onboarding="sidebar">

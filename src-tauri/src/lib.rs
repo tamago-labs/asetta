@@ -110,7 +110,6 @@ fn write_file_content(path: String, content: String) -> Result<(), String> {
         .map_err(|e| format!("Failed to write file: {}", e))
 }
 
-
 #[tauri::command]
 async fn connect_mcp_server(
     server_name: String,
@@ -119,7 +118,7 @@ async fn connect_mcp_server(
     env: HashMap<String, String>,
     clients: State<'_, MCPClients>,
 ) -> Result<String, String> {
-    println!("[DEBUG] connect_mcp_server_with_env called for {}", server_name);
+    println!("[DEBUG] connect_mcp_server called for {}", server_name);
     println!("[DEBUG] Command: {} {:?}", command, args);
     println!("[DEBUG] Environment variables: {:?}", env.keys().collect::<Vec<_>>());
     

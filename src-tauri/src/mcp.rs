@@ -69,7 +69,7 @@ impl MCPClient {
                     "tools": {}
                 },
                 "clientInfo": {
-                    "name": "butler",
+                    "name": "build-your-dream",
                     "version": "0.1.0"
                 }
             }

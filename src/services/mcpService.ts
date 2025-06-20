@@ -1,30 +1,45 @@
+import { tauriMCPService } from './tauriMCPService';
 import { MCPServerConfig, MCPServerInstance, MCPTool, MCPResource, MCPServerEvent } from '../types/mcp';
+import { Logger } from '../utils/logger';
 
-class MCPService {
+export class MCPService {
   private servers: Map<string, MCPServerInstance> = new Map();
   private eventListeners: Map<string, ((event: MCPServerEvent) => void)[]> = new Map();
   private workspaceRoot: string | null = null;
+  private logger = Logger.getInstance();
 
   constructor() {
     this.setupDefaultServers();
-    console.log('MCP Service initialized');
+    this.logger.info('mcp', 'MCP Service initialized with Tauri integration');
   }
 
   setWorkspaceRoot(path: string | null) {
-    console.log(`Setting current folder to: ${path}`);
+    this.logger.info('mcp', `Setting current folder to: ${path}`);
     this.workspaceRoot = path;
     const fsServer = this.servers.get('filesystem');
     if (fsServer && path) {
-      console.log(`Updating filesystem server args with new folder: ${path}`);
+      this.logger.info('mcp', `Updating filesystem server args with new folder: ${path}`);
       fsServer.config.args = ['-y', '@modelcontextprotocol/server-filesystem', path];
 
       if (fsServer.status === 'running') {
-        console.log(`Restarting filesystem server with new folder: ${path}`);
+        this.logger.info('mcp', `Restarting filesystem server with new folder: ${path}`);
         this.restartServer('filesystem').then(() => {
-          console.log(`Filesystem server restarted successfully with folder: ${path}`);
+          this.logger.info('mcp', `Filesystem server restarted successfully with folder: ${path}`);
         }).catch(err => {
-          console.error(`Failed to restart filesystem server: ${err.message}`);
+          this.logger.error('mcp', `Failed to restart filesystem server: ${err.message}`);
         });
+      } else {
+        this.logger.info('mcp', `Starting filesystem server with folder: ${path}`);
+        this.startServer('filesystem').then(() => {
+          this.logger.info('mcp', `Filesystem server started successfully with folder: ${path}`);
+        }).catch(err => {
+          this.logger.error('mcp', `Failed to start filesystem server: ${err.message}`);
+        });
+      }
+    } else if (!path) {
+      this.logger.info('mcp', 'No folder path provided, stopping filesystem server');
+      if (fsServer && fsServer.status === 'running') {
+        this.stopServer('filesystem');
       }
     }
   }
@@ -89,30 +104,51 @@ class MCPService {
       server.status = 'starting';
       this.emit('serverStatusChanged', { serverName, status: 'starting' });
 
-      console.log(`Starting MCP server ${serverName}`, {
+      this.logger.info('mcp', `Starting MCP server ${serverName}`, {
         command: server.config.command,
         args: server.config.args,
         env: server.config.env
       });
 
-      // Simulate MCP server connection
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Connect to MCP server using real protocol with environment variables
+      await tauriMCPService.connectServerWithEnv(
+        serverName,
+        server.config.command,
+        server.config.args,
+        server.config.env || {}
+      );
 
-      // Mock tools for now
-      server.tools = this.getMockTools(serverName);
-      server.resources = [];
+      // Load real tools from the server
+      const toolsResponse = await tauriMCPService.listTools(serverName);
+      server.tools = this.formatMCPTools(toolsResponse);
+      this.logger.info('mcp', `Loaded ${server.tools.length} tools from ${serverName}`, {
+        tools: server.tools.map(t => t.name)
+      });
+
+      // Only try to load resources if server supports it (skip for filesystem)
+      if (serverName !== 'filesystem') {
+        try {
+          const resourcesResponse = await tauriMCPService.listResources(serverName);
+          server.resources = this.formatMCPResources(resourcesResponse);
+        } catch (error) {
+          this.logger.warn('mcp', `Server ${serverName} doesn't support resources`, { error });
+          server.resources = [];
+        }
+      } else {
+        server.resources = [];
+      }
 
       server.status = 'running';
       server.lastStarted = new Date();
       server.error = undefined;
 
-      console.log(`MCP server ${serverName} started successfully`);
+      this.logger.info('mcp', `MCP server ${serverName} started successfully`);
       this.emit('serverStatusChanged', { serverName, status: 'running' });
       this.emit('serverStarted', { serverName, tools: server.tools, resources: server.resources });
 
       return true;
     } catch (error: any) {
-      console.error(`Failed to start MCP server ${serverName}`, { error: error.message });
+      this.logger.error('mcp', `Failed to start MCP server ${serverName}`, { error: error.message });
       server.status = 'error';
       server.error = error instanceof Error ? error.message : 'Unknown error';
 
@@ -128,6 +164,8 @@ class MCPService {
     }
 
     try {
+      await tauriMCPService.disconnectServer(serverName);
+
       server.status = 'stopped';
       server.tools = [];
       server.resources = [];
@@ -137,7 +175,7 @@ class MCPService {
 
       return true;
     } catch (error: any) {
-      console.error(`Failed to stop MCP server ${serverName}:`, error);
+      this.logger.error('mcp', `Failed to stop MCP server ${serverName}`, { error: error.message });
       server.status = 'error';
       server.error = error instanceof Error ? error.message : 'Unknown error';
 
@@ -147,9 +185,21 @@ class MCPService {
   }
 
   async restartServer(serverName: string): Promise<boolean> {
-    console.log(`Restarting server ${serverName}`);
+    this.logger.info('mcp', `Restarting server ${serverName}`);
+
+    // For filesystem server, make sure it fully stops before starting
+    if (serverName === 'filesystem') {
+      const server = this.servers.get(serverName);
+      if (server) {
+        this.logger.info('mcp', 'Filesystem server config before restart', { config: server.config });
+      }
+    }
+
     await this.stopServer(serverName);
+
+    // Add a small delay to ensure complete shutdown
     await new Promise(resolve => setTimeout(resolve, 500));
+
     return await this.startServer(serverName);
   }
 
@@ -169,6 +219,7 @@ class MCPService {
   }
 
   removeServer(serverName: string): void {
+    // Prevent removing the default filesystem server
     if (serverName === 'filesystem') {
       throw new Error('Cannot remove the default filesystem server');
     }
@@ -186,23 +237,39 @@ class MCPService {
     this.emit('serverRemoved', { serverName });
   }
 
-  private getMockTools(serverName: string): MCPTool[] {
-    switch (serverName) {
-      case 'filesystem':
-        return [
-          { name: 'read_file', description: 'Read file contents', inputSchema: {} },
-          { name: 'write_file', description: 'Write file contents', inputSchema: {} },
-          { name: 'list_directory', description: 'List directory contents', inputSchema: {} }
-        ];
-      case '@tamago-labs/smart-contract-dev':
-        return [
-          { name: 'compile_contract', description: 'Compile Solidity contract', inputSchema: {} },
-          { name: 'deploy_contract', description: 'Deploy contract to network', inputSchema: {} },
-          { name: 'verify_contract', description: 'Verify contract on explorer', inputSchema: {} }
-        ];
-      default:
-        return [];
+  updateServerConfig(serverName: string, config: Partial<MCPServerConfig>): void {
+    const server = this.servers.get(serverName);
+    if (!server) {
+      throw new Error(`Server ${serverName} not found`);
     }
+
+    server.config = { ...server.config, ...config };
+    this.emit('serverConfigUpdated', { serverName, config: server.config });
+  }
+
+  private formatMCPTools(toolsResponse: any): MCPTool[] {
+    if (!toolsResponse || !toolsResponse.result || !toolsResponse.result.tools) {
+      return [];
+    }
+
+    return toolsResponse.result.tools.map((tool: any) => ({
+      name: tool.name,
+      description: tool.description || tool.name,
+      inputSchema: tool.inputSchema || {}
+    }));
+  }
+
+  private formatMCPResources(resourcesResponse: any): MCPResource[] {
+    if (!resourcesResponse || !resourcesResponse.result || !resourcesResponse.result.resources) {
+      return [];
+    }
+
+    return resourcesResponse.result.resources.map((resource: any) => ({
+      uri: resource.uri,
+      name: resource.name || resource.uri,
+      description: resource.description,
+      mimeType: resource.mimeType
+    }));
   }
 
   async callTool(serverName: string, toolName: string, args: Record<string, any>): Promise<any> {
@@ -217,13 +284,29 @@ class MCPService {
     }
 
     try {
-      // Mock tool execution
-      const result = { success: true, tool: toolName, args, timestamp: new Date() };
+      const result = await tauriMCPService.callTool(serverName, toolName, args);
       this.emit('toolCalled', { serverName, toolName, arguments: args, result });
       return result;
     } catch (error) {
       console.error(`Failed to call tool ${toolName} on server ${serverName}:`, error);
       this.emit('toolError', { serverName, toolName, arguments: args, error });
+      throw error;
+    }
+  }
+
+  async readResource(serverName: string, uri: string): Promise<any> {
+    const server = this.servers.get(serverName);
+    if (!server || server.status !== 'running') {
+      throw new Error(`Server ${serverName} is not running`);
+    }
+
+    try {
+      const result = await tauriMCPService.readResource(serverName, uri);
+      this.emit('resourceRead', { serverName, uri, result });
+      return result;
+    } catch (error) {
+      console.error(`Failed to read resource ${uri} from server ${serverName}:`, error);
+      this.emit('resourceError', { serverName, uri, error });
       throw error;
     }
   }
@@ -249,15 +332,73 @@ class MCPService {
       }));
   }
 
+  getAvailableResources(): { serverName: string; resources: MCPResource[] }[] {
+    return Array.from(this.servers.values())
+      .filter(server => server.status === 'running')
+      .map(server => ({
+        serverName: server.config.name,
+        resources: server.resources
+      }));
+  }
+
   getServerTemplates(): MCPServerConfig[] {
     return [
       {
-        name: '@tamago-labs/smart-contract-dev',
+        name: 'nodit-mcp',
         command: 'npx',
-        args: ['-y', '@tamago-labs/smart-contract-dev'],
-        env: {},
-        description: 'Comprehensive smart contract development tools with deployment and verification capabilities',
+        args: ['@noditlabs/nodit-mcp-server@latest'],
+        env: {
+          NODIT_API_KEY: 'YOUR_NODIT_API_KEY'
+        },
+        description: 'Provides tools to discover and interact with Nodit Web3 APIs and data infrastructure.',
         category: 'web3'
+      },
+      {
+        name: 'aptos-mcp',
+        command: 'npx',
+        args: ['-y', '@tamago-labs/aptos-mcp', '--aptos_private_key=YOUR_PRIVATE_KEY', '--aptos_network=mainnet'],
+        description: 'Comprehensive Aptos blockchain DeFi toolkit with 40+ tools for DEX, lending, staking, and smart contracts',
+        category: 'web3'
+      },
+      {
+        name: 'sui-mcp',
+        command: 'npx',
+        args: ['-y', '@tamago-labs/sui-mcp', '--sui_private_key=YOUR_PRIVATE_KEY', '--sui_network=mainnet'],
+        description: 'MCP for Sui blockchain ecosytem with 33+ tools covering account management, DeFi protocols, development, staking, and market data',
+        category: 'web3'
+      },
+      {
+        name: 'xrpl-mcp',
+        command: 'npx',
+        args: ['-y', '@tamago-labs/xrpl-mcp', '--xrpl_private_key=YOUR_PRIVATE_KEY', '--xrpl_network=mainnet'],
+        description: 'MCP for the XRP Ledger allows managing wallet operations, token creation, NFTs, and DEX trading',
+        category: 'web3'
+      },
+      {
+        name: 'story-protocol-mcp',
+        command: 'npx',
+        args: ['-y', '@tamago-labs/story-protocol-mcp', '--private_key=YOUR_PRIVATE_KEY'],
+        description: 'Story Protocol MCP for IP asset management, licensing, and blockchain operations',
+        category: 'web3'
+      },
+      {
+        name: 'chainlink-mcp',
+        command: 'npx', 
+        args: ['-y', '@tamago-labs/chainlink-mcp', '--private_key=YOUR_PRIVATE_KEY'],
+        description: 'Chainlink MCP for oracle data feeds, price feeds, and decentralized services',
+        category: 'web3'
+      },
+      {
+        name: 'aws-mcp',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-aws'],
+        env: {
+          AWS_ACCESS_KEY_ID: 'YOUR_AWS_ACCESS_KEY',
+          AWS_SECRET_ACCESS_KEY: 'YOUR_AWS_SECRET_KEY',
+          AWS_REGION: 'us-east-1'
+        },
+        description: 'AWS cloud services integration for EC2, S3, Lambda, and other AWS resources',
+        category: 'custom'
       },
       {
         name: 'web-search',

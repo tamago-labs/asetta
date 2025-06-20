@@ -1,120 +1,103 @@
-# Build Your Dream - AI Tokenization Platform
+# Build Your Dream - Web3 RWA MCP Desktop Application
 
-> **Revolutionizing Asset Tokenization with AI-Powered Desktop Application**
+> **Multi-Agent Orchestration for Web3 Real World Assets using AWS and Chainlink**
 
-Build Your Dream is a desktop application that uses Model Context Protocol (MCP) to enable collaborative AI agent workflows for Real World Asset (RWA) tokenization. The platform employs a decentralized agent architecture where each AI agent maintains its own conversation context and specialization, coordinated by a Project Manager Agent.
-
-A professional Slack-style desktop application that democratizes real-world asset tokenization through specialized AI agents. Transform your valuable assets into digital tokens without hiring expensive consultants or developers.
+Build Your Dream is a Tauri desktop application that leverages Model Context Protocol (MCP) to enable multi-agent orchestration for building Web3 Real World Asset (RWA) projects. The platform integrates AWS cloud services and Chainlink oracles to create comprehensive blockchain solutions for asset tokenization, featuring specialized MCP servers for different blockchain ecosystems including Story Protocol for IP assets.
 
 ![Build Your Dream](https://img.shields.io/badge/Platform-Desktop-blue)
 ![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?logo=typescript)
 ![Tauri](https://img.shields.io/badge/Tauri-2+-24C8DB?logo=tauri)
-![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3+-06B6D4?logo=tailwindcss)
+![MCP](https://img.shields.io/badge/MCP-Protocol-purple)
 
 ## 🚀 **What is Build Your Dream?**
 
-Build Your Dream is a revolutionary desktop application that uses artificial intelligence to help you tokenize real-world assets like real estate, commodities, art collections, and other valuable assets. Instead of hiring multiple expensive consultants and developers, you work with a team of specialized AI agents that handle everything from legal compliance to smart contract development.
+Build Your Dream is a revolutionary desktop application that uses Model Context Protocol (MCP) to orchestrate multiple AI agents for Web3 Real World Asset development. The platform provides a unified interface to manage blockchain projects that integrate:
 
-**Think of it as having a complete tokenization team in a single application.**
-
----
-
-## 💡 **The Problem We Solve**
-
-### Current Challenges in Asset Tokenization:
-
-- **💰 Expensive Expertise Required**: Legal, blockchain, AWS infrastructure, and compliance specialists cost $200-500/hour
-- **🔄 Complex Coordination**: Managing multiple consultants, developers, and legal teams
-- **⏰ Time-Intensive Process**: Traditional tokenization projects take 6-12 months
-- **⚠️ High Risk of Mistakes**: Regulatory compliance errors can be costly and dangerous
-- **🚧 Technical Barriers**: Most asset owners don't understand blockchain technology
-
-### Our Solution:
-**One desktop application with AI agents that do the work of an entire tokenization team, reducing costs by 80% and timeline by 75%.**
+- **🔗 Multiple Blockchain Networks**: Aptos, Sui, XRPL, Story Protocol
+- **☁️ AWS Cloud Services**: Infrastructure automation and deployment
+- **📡 Chainlink Oracles**: Real-world data feeds and decentralized services
+- **🎨 Story Protocol**: IP asset management and licensing
+- **🗂️ File System Operations**: Project management and code generation
 
 ---
 
-## 🤖 **Meet Your AI Team**
+## 🤖 **MCP Server Integration**
 
-Instead of hiring multiple human consultants, you get 5 specialized AI agents:
+The application features a comprehensive MCP server management system with pre-configured templates for Web3 development:
 
-### 1. **Project Manager Agent** 🎯 - *"Your Orchestrator"*
-- **What it does**: Coordinates all other agents and manages your project timeline
-- **Like having**: A senior project manager who never sleeps and knows exactly which expert to involve
-- **Benefit**: No more managing multiple vendors or worrying about missed deadlines
+### **Available MCP Servers**
 
-### 2. **Legal Compliance Agent** ⚖️ - *"Your Regulatory Expert"*
-- **What it does**: Ensures your tokenization meets all SEC regulations and legal requirements
-- **Like having**: A top-tier securities lawyer specializing in digital assets
-- **Benefit**: Avoid costly legal mistakes and regulatory violations
+| Server | Description | Tools | Category |
+|--------|-------------|-------|----------|
+| **Filesystem** | File operations and project navigation | File read/write, directory listing | Core |
+| **Story Protocol** | IP asset management and licensing | Asset registration, licensing, royalties | Web3 |
+| **Chainlink** | Oracle data feeds and services | Price feeds, VRF, automation | Web3 |
+| **Aptos MCP** | Aptos blockchain DeFi toolkit | DEX, lending, staking, contracts | Web3 |
+| **Sui MCP** | Sui blockchain ecosystem tools | Account management, DeFi protocols | Web3 |
+| **XRPL MCP** | XRP Ledger operations | Wallet ops, tokens, NFTs, DEX | Web3 |
+| **Nodit MCP** | Web3 API and data infrastructure | Blockchain data discovery | Web3 |
+| **AWS MCP** | Cloud services integration | EC2, S3, Lambda management | Cloud |
+| **Web Search** | Research and documentation | Web search, content scraping | Utility |
 
-### 3. **Smart Contract Agent** 🔗 - *"Your Blockchain Developer"*
-- **What it does**: Creates the blockchain technology that makes your asset tradeable as digital tokens
-- **Like having**: A senior blockchain developer with deep expertise in asset tokenization
-- **Benefit**: Get enterprise-grade smart contracts without learning to code
+### **MCP Features**
 
-### 4. **AWS Q Agent** ☁️ - *"Your Infrastructure Consultant"*
-- **What it does**: Designs and sets up the cloud infrastructure to host your tokenization platform
-- **Like having**: An AWS solutions architect optimizing for security and cost
-- **Benefit**: Professional-grade infrastructure without the complexity
-
-### 5. **Full-Stack Agent** 💻 - *"Your App Developer"*
-- **What it does**: Builds the investor-facing website and dashboard for buying/managing tokens
-- **Like having**: A complete web development team building your investor portal
-- **Benefit**: Beautiful, functional apps that investors actually want to use
+- **🔄 Real-time Server Management**: Start, stop, and restart MCP servers
+- **⚙️ Environment Configuration**: Secure API key and environment setup
+- **🛠️ Tool Discovery**: Automatic detection of available tools per server
+- **📊 Status Monitoring**: Real-time server health and connection status
+- **🎯 Custom Server Addition**: Add and configure custom MCP servers
 
 ---
 
-## 🎯 **How It Works**
+## 🏗️ **Architecture Overview**
 
-### **Step 1: Tell Us About Your Asset**
-Simply describe what you want to tokenize:
-- "$5M Manhattan office building"
-- "$2M gold commodity fund"  
-- "$8M contemporary art collection"
-
-### **Step 2: AI Agents Get to Work**
-The agents automatically:
-- **Legal Agent** analyzes regulatory requirements for your asset type and location
-- **Smart Contract Agent** creates the blockchain contracts for your specific asset
-- **AWS Q Agent** designs the cloud infrastructure using Amazon's AI recommendations
-- **Full-Stack Agent** builds the investor website and management dashboard
-- **Project Manager** coordinates everything and keeps you updated
-
-### **Step 3: Review and Deploy**
-- See all generated code, documents, and designs in real-time
-- Chat with individual agents to request changes
-- Deploy your complete tokenization platform with one click
-
----
-
-## 📊 **Real-World Example**
-
-### **Scenario**: You own a $5M Manhattan office building and want to tokenize it.
-
-| **Traditional Approach** | **Build Your Dream Approach** |
-|--------------------------|-------------------------------|
-| 💰 Securities lawyer: $50,000-100,000 | 💻 One desktop application |
-| 🔧 Blockchain developer: $75,000-150,000 | ⚡ Complete platform in 3-4 weeks |
-| ☁️ AWS consultant: $25,000-50,000 | 💵 Software license fee only |
-| 🖥️ Frontend developer: $40,000-80,000 | 📉 Fraction of traditional cost |
-| 📋 Project management: $20,000-40,000 | |
-| **Total: $210,000-420,000** | |
-| **Timeline: 6-12 months** | |
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Tauri Desktop App                        │
+├─────────────────────────────────────────────────────────────┤
+│  React Frontend (TypeScript)                               │
+│  ├── Claude AI Integration (Anthropic SDK)                │
+│  ├── MCP Service Layer                                     │
+│  └── UI Components (Tailwind CSS)                         │
+├─────────────────────────────────────────────────────────────┤
+│  Rust Backend                                              │
+│  ├── MCP Client Implementation                             │
+│  ├── JSON-RPC Protocol Handling                           │
+│  └── Process Management                                    │
+├─────────────────────────────────────────────────────────────┤
+│                    MCP Servers                             │
+│  ├── 🗂️  Filesystem Server                                │
+│  ├── 🌐  Story Protocol MCP                               │
+│  ├── 📡  Chainlink MCP                                    │
+│  ├── 🔷  Aptos MCP Server                                 │
+│  ├── 🔹  Sui MCP Server                                   │
+│  ├── 🟦  XRPL MCP Server                                  │
+│  ├── ☁️   AWS MCP Server                                  │
+│  └── 🔍  Web Search MCP                                   │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## 🛠️ **Tech Stack**
 
-| Category | Technology | Purpose |
-|----------|------------|---------|
-| **Frontend** | React 18 + TypeScript | Modern, type-safe UI development |
-| **Styling** | TailwindCSS | Professional, responsive design system |
-| **Desktop** | Tauri | Cross-platform desktop application |
-| **Icons** | Lucide React | Beautiful, consistent iconography |
-| **Build Tool** | Vite | Fast development and optimized builds |
-| **State Management** | React Hooks | Simple, effective state handling |
+### **Frontend**
+- **React 18** with TypeScript for type-safe development
+- **Tailwind CSS** for modern, responsive design
+- **Monaco Editor** for code editing and syntax highlighting
+- **Lucide React** for consistent iconography
+
+### **Backend**
+- **Tauri 2.0** for cross-platform desktop application
+- **Rust** for high-performance native operations
+- **Tokio** for async runtime and process management
+- **Serde JSON** for data serialization
+
+### **AI & Integration**
+- **Anthropic Claude SDK** for AI agent conversations
+- **Model Context Protocol (MCP)** for tool orchestration
+- **JSON-RPC 2.0** for MCP server communication
 
 ---
 
@@ -122,152 +105,248 @@ The agents automatically:
 
 ### **Prerequisites**
 - Node.js 18+ ([Download](https://nodejs.org/))
-- Rust ([Install Guide](https://rustup.rs/))
-- npm or yarn package manager
+- Rust and Cargo ([Install Guide](https://rustup.rs/))
+- Claude API Key ([Get Here](https://console.anthropic.com/))
 
-### **Quick Start**
+### **Installation**
 
-1. **Clone and Install**
+1. **Clone Repository**
    ```bash
    git clone <repository-url>
    cd build-your-dream
+   ```
+
+2. **Install Dependencies**
+   ```bash
    npm install
    ```
 
-2. **Development Mode**
+3. **Development Mode**
    ```bash
    npm run tauri dev
    ```
 
-3. **Production Build**
+4. **Production Build**
    ```bash
    npm run tauri build
    ```
 
-### **Available Scripts**
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start Vite development server |
-| `npm run build` | Build for production |
-| `npm run tauri dev` | Run Tauri development mode |
-| `npm run tauri build` | Build desktop application |
+### **Configuration**
+
+1. **API Keys Setup**: Configure your Claude API key in the settings
+2. **Workspace Selection**: Choose your project workspace folder
+3. **MCP Servers**: Configure blockchain network credentials and API keys
+4. **Environment Variables**: Set up AWS credentials, private keys, and other secrets
 
 ---
 
-## 📁 **Project Architecture**
+## 📁 **Project Structure**
 
 ```
 src/
-├── components/           # Reusable UI components
-│   ├── Sidebar.tsx      # Agent navigation with status
-│   ├── ChatArea.tsx     # Real-time chat interface
-│   └── ProjectPanel.tsx # Project tracking dashboard
-├── data/
-│   └── mockData.ts      # Sample agents and messages
-├── utils/
-│   └── helpers.ts       # Utility functions
-├── App.tsx              # Main application logic
-├── main.tsx             # React application entry
-└── index.css            # Global styles and animations
+├── components/           # React components
+│   ├── Sidebar.tsx      # Navigation and agent management
+│   ├── ChatArea.tsx     # AI conversation interface
+│   ├── FileManager.tsx  # Project file browser
+│   ├── MCPManagerModal.tsx # MCP server management
+│   └── auth/           # Authentication components
+├── services/           # Core service layer
+│   ├── mcpService.ts   # MCP protocol integration
+│   ├── tauriMCPService.ts # Tauri backend communication
+│   ├── claude.ts       # Claude AI integration
+│   └── agentService.ts # Agent management
+├── types/             # TypeScript definitions
+│   ├── mcp.ts         # MCP-related types
+│   ├── agent.ts       # Agent and conversation types
+│   └── auth.ts        # Authentication types
+└── utils/             # Utility functions
+    └── logger.ts      # Logging system
+
+src-tauri/
+├── src/
+│   ├── lib.rs         # Main Tauri application
+│   ├── mcp.rs         # MCP client implementation
+│   └── main.rs        # Application entry point
+└── Cargo.toml         # Rust dependencies
 ```
 
 ---
 
-## 🎨 **UI/UX Features**
+## 🔧 **MCP Server Configuration**
 
-### **Slack-Inspired Interface**
-- **Dark Theme**: Professional, modern appearance
-- **Real-time Messaging**: Instant communication with AI agents
-- **Status Indicators**: See which agents are online, busy, or away
-- **Code Highlighting**: Syntax highlighting for smart contracts and code
-- **Progress Tracking**: Visual milestones and completion percentages
+### **Web3 Blockchain Servers**
 
-### **Interactive Elements**
-- **Agent Chat**: Individual conversations with each specialist
-- **File Attachments**: Share documents and receive generated files
-- **Search Functionality**: Find agents and conversations quickly
-- **Notifications**: Real-time alerts for project updates
+#### **Story Protocol MCP**
+```bash
+npx -y @tamago-labs/story-protocol-mcp --private_key=YOUR_PRIVATE_KEY
+```
+- IP asset registration and management
+- Licensing and royalty distribution
+- Revenue tracking and analytics
 
----
+#### **Chainlink MCP**
+```bash
+npx -y @tamago-labs/chainlink-mcp --private_key=YOUR_PRIVATE_KEY
+```
+- Price feed integrations
+- VRF (Verifiable Random Functions)
+- Automation and upkeep services
 
-## 📈 **Sample Project: Manhattan Office Building**
+#### **Aptos MCP**
+```bash
+npx -y @tamago-labs/aptos-mcp --aptos_private_key=YOUR_KEY --aptos_network=mainnet
+```
+- 40+ DeFi tools for DEX, lending, staking
+- Smart contract deployment and management
+- Move language development tools
 
-The application includes a comprehensive example:
+### **Cloud Infrastructure**
 
-| **Project Detail** | **Value** |
-|-------------------|-----------|
-| **Asset Type** | Commercial Real Estate |
-| **Value** | $5,000,000 |
-| **Progress** | 65% Complete |
-| **Timeline** | 45 days (vs 6-12 months traditional) |
-| **Status** | In Progress |
-
-### **Completed Milestones**
-- ✅ Legal compliance analysis
-- ✅ SEC Regulation D 506(c) filing
-- 🔄 Smart contract development (75%)
-- 🔄 AWS infrastructure setup (60%)
-- 🔄 Investor portal (25%)
-
----
-
-## 💬 **Mock Conversations**
-
-Experience realistic AI agent interactions:
-
-- **Legal Agent**: SEC compliance frameworks and regulatory analysis
-- **Smart Contract Agent**: Solidity code for ERC-1400 security tokens
-- **AWS Agent**: Infrastructure blueprints with cost estimates
-- **Frontend Agent**: React dashboard development updates
-- **Project Manager**: Milestone tracking and team coordination
+#### **AWS MCP**
+```bash
+npx -y @modelcontextprotocol/server-aws
+```
+Environment variables:
+- `AWS_ACCESS_KEY_ID`: Your AWS access key
+- `AWS_SECRET_ACCESS_KEY`: Your AWS secret key
+- `AWS_REGION`: Target AWS region (e.g., us-east-1)
 
 ---
 
-## 🔮 **Future Roadmap**
+## 💬 **AI Agent Conversations**
 
-### **Phase 1** (Current)
-- ✅ Slack-style UI implementation
-- ✅ Mock AI agent conversations
-- ✅ Project tracking dashboard
-- ✅ Professional desktop application
+The application features intelligent AI agents that can use MCP tools to perform real blockchain operations:
 
-### **Phase 2** (Next)
-- 🔄 Real AI agent integration (Anthropic Claude)
-- 🔄 Live WebSocket connections
-- 🔄 Actual smart contract generation
-- 🔄 AWS deployment automation
+### **Example Workflow: RWA Tokenization**
 
-### **Phase 3** (Future)
-- 📅 Multi-project support
-- 📅 Custom agent configuration
-- 📅 Advanced analytics dashboard
-- 📅 Marketplace integration
+1. **💬 User**: "Help me tokenize a $5M real estate property on Story Protocol"
+
+2. **🤖 AI Agent**: Uses multiple MCP tools:
+   - **Filesystem**: Creates project structure
+   - **Story Protocol**: Registers IP asset
+   - **Chainlink**: Sets up price feeds
+   - **AWS**: Deploys infrastructure
+   - **Web Search**: Researches compliance requirements
+
+3. **📊 Result**: Complete tokenization platform with:
+   - Smart contracts deployed
+   - IP licensing configured
+   - Price oracles connected
+   - Infrastructure running
+   - Compliance documentation
 
 ---
 
-## 🏆 **Why Choose Build Your Dream?**
+## 🎯 **Key Features**
 
-| **Traditional Method** | **Build Your Dream** |
-|----------------------|-------------------|
-| 😰 Multiple expensive consultants | 🤖 AI agents included |
-| 📞 Complex coordination | 🎯 Single application |
-| 💸 $200K-400K+ total cost | 💰 Fraction of the cost |
-| ⏰ 6-12 month timeline | ⚡ 3-4 weeks |
-| 🎲 High risk of errors | ✅ AI-powered accuracy |
-| 🤔 Technical complexity | 🎨 User-friendly interface |
+### **Multi-Agent Orchestration**
+- **Specialized AI Agents**: Each agent focuses on specific domains
+- **Tool Integration**: Real blockchain operations via MCP
+- **Context Awareness**: Agents understand project state and history
+- **Collaborative Workflow**: Agents work together on complex tasks
+
+### **Blockchain Integration**
+- **Multi-Chain Support**: Aptos, Sui, XRPL, Ethereum, Story Protocol
+- **Real Operations**: Actual blockchain transactions and deployments
+- **Oracle Integration**: Chainlink data feeds and services
+- **Gas Optimization**: Smart contract efficiency analysis
+
+### **Cloud Infrastructure**
+- **AWS Automation**: Automated cloud deployment and management
+- **Scalable Architecture**: Enterprise-grade infrastructure patterns
+- **Security Best Practices**: Secure key management and access control
+- **Cost Optimization**: Resource usage monitoring and optimization
+
+---
+
+## 🛡️ **Security Considerations**
+
+### **Private Key Management**
+- **Local Storage Only**: Private keys never leave your machine
+- **Environment Variables**: Secure credential configuration
+- **Process Isolation**: MCP servers run in separate processes
+- **No Network Transmission**: Sensitive data stays local
+
+### **API Security**
+- **Encrypted Storage**: API keys encrypted at rest
+- **Secure Communication**: TLS for all external API calls
+- **Permission Model**: Granular access control for tools
+- **Audit Logging**: Comprehensive operation logging
+
+---
+
+## 📈 **Use Cases**
+
+### **Real Estate Tokenization**
+- Property valuation and due diligence
+- Regulatory compliance automation
+- Smart contract deployment
+- Investor portal creation
+- Liquidity pool management
+
+### **IP Asset Management**
+- Copyright and trademark registration
+- Licensing agreement automation
+- Royalty distribution systems
+- Revenue tracking and analytics
+- Marketplace integration
+
+### **Commodity Trading**
+- Supply chain verification
+- Quality assurance protocols
+- Price feed integration
+- Settlement automation
+- Risk management tools
+
+### **Art and Collectibles**
+- Provenance tracking
+- Authentication systems
+- Fractionalized ownership
+- Exhibition management
+- Auction platform integration
+
+---
+
+## 🔮 **Roadmap**
+
+### **Current Features** ✅
+- MCP server management and integration
+- Claude AI with tool calling capabilities
+- Multi-blockchain support (Aptos, Sui, XRPL, Story Protocol)
+- AWS cloud services integration
+- File system operations and project management
+
+### **Near Term** 🔄
+- Enhanced security and key management
+- Additional blockchain network support
+- Advanced analytics and reporting
+- Multi-project workspace support
+- Team collaboration features
+
+### **Future** 📅
+- Visual workflow builder
+- Custom agent creation tools
+- Marketplace for MCP servers
+- Enterprise deployment options
+- Advanced compliance automation
 
 ---
 
 ## 🤝 **Contributing**
 
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+We welcome contributions! Here's how to get started:
 
-### **Development Setup**
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+1. **Fork the Repository**
+2. **Create Feature Branch**: `git checkout -b feature/amazing-feature`
+3. **Commit Changes**: `git commit -m 'Add amazing feature'`
+4. **Push to Branch**: `git push origin feature/amazing-feature`
+5. **Open Pull Request**
+
+### **Development Guidelines**
+- Follow TypeScript best practices
+- Maintain test coverage for critical paths
+- Update documentation for new features
+- Follow semantic versioning for releases
 
 ---
 
@@ -277,18 +356,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 📞 **Support & Contact**
+## 📞 **Support & Community**
 
-- **Documentation**: [docs.buildyourdream.ai](https://docs.buildyourdream.ai)
-- **Support**: [support@buildyourdream.ai](mailto:support@buildyourdream.ai)
-- **Community**: [Discord Server](https://discord.gg/buildyourdream)
+- **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-repo/discussions)
+- **Documentation**: [Wiki](https://github.com/your-repo/wiki)
 
 ---
 
 <div align="center">
 
-**Built with ❤️ for the future of asset tokenization**
+**🚀 Building the Future of Web3 RWA Development**
 
-[Website](https://buildyourdream.ai) • [Documentation](https://docs.buildyourdream.ai) • [Community](https://discord.gg/buildyourdream)
+*Powered by Model Context Protocol and Multi-Agent AI*
 
 </div>
