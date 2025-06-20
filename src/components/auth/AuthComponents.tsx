@@ -11,10 +11,10 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
   onSettingsClick
 }) => {
   return (
-    <div className="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg"> 
+    <div className="flex items-center gap-2 "> 
       <button
         onClick={onSettingsClick}
-        className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"
+        className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
         title="Settings"
       >
         <SettingsIcon className="w-4 h-4"/>

@@ -215,7 +215,7 @@ export const FileManager: React.FC<FileManagerProps> = ({
         
         {/* Current folder path */}
         {projectPath && (
-          <div className="flex items-center space-x-2 mb-3 p-2 bg-slate-700/50 rounded text-xs">
+          <div className="flex items-center space-x-2  p-2 bg-slate-700/50 rounded text-xs">
             <Home size={12} className="text-slate-400" />
             <span className="text-slate-300 truncate" title={projectPath}>
               {projectPath.split('/').pop() || projectPath}
@@ -224,7 +224,7 @@ export const FileManager: React.FC<FileManagerProps> = ({
         )}
         
         {/* Search */}
-        {projectPath && (
+        {/* {projectPath && (
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
             <input
@@ -243,7 +243,7 @@ export const FileManager: React.FC<FileManagerProps> = ({
               </button>
             )}
           </div>
-        )}
+        )} */}
       </div>
       
       {/* File tree */}

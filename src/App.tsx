@@ -7,6 +7,7 @@ import { FileViewer } from './components/FileViewer';
 import { WelcomeScreen } from './components/setup/WelcomeScreen';
 import { SettingsModal } from './components/setup/SettingsModal';
 import { MCPManagerModal } from './components/MCPManagerModal';
+import { AddAgentModal } from './components/AddAgentModal';
 import { ConnectionStatus, OnboardingManager } from './components/auth/AuthComponents';
 import { authService } from './services/auth';
 import { agentService } from './services/agentService';
@@ -15,7 +16,7 @@ import { agents, messages, currentProject } from './data/agentTemplates';
 import { AppSettings, SetupFormData } from './types/auth';
 import { FileInfo } from './types/files';
 import { Agent } from './types/agent';
-import { Server } from 'lucide-react';
+import { Server, Settings, HelpCircle, Plus } from 'lucide-react';
 
 function App() {
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
@@ -25,7 +26,8 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showMCPManager, setShowMCPManager] = useState(false);
-  
+  const [showAddAgent, setShowAddAgent] = useState(false);
+
   // File management state
   const [projectPath, setProjectPath] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileInfo | null>(null);
@@ -56,7 +58,7 @@ function App() {
     const loadAgents = () => {
       const allAgents = agentService.getAgents();
       setRealAgents(allAgents);
-      
+
       // Switch to real mode if we have real agents
       if (allAgents.length > 0) {
         setLegacyMode(false);
@@ -64,7 +66,7 @@ function App() {
     };
 
     loadAgents();
-    
+
     // Set up MCP workspace
     if (projectPath) {
       mcpService.setWorkspaceRoot(projectPath);
@@ -72,11 +74,13 @@ function App() {
   }, [projectPath]);
 
   const handleAgentCreated = (agentId: string) => {
+    setShowAddAgent(false);
+
     // Refresh agents list
     const allAgents = agentService.getAgents();
     setRealAgents(allAgents);
     setLegacyMode(false);
-    
+
     // Select the newly created agent
     setSelectedAgentId(agentId);
   };
@@ -84,16 +88,16 @@ function App() {
   const handleAgentRemoved = (agentId: string) => {
     // Remove the agent
     agentService.deleteAgent(agentId);
-    
+
     // Refresh agents list
     const allAgents = agentService.getAgents();
     setRealAgents(allAgents);
-    
+
     // If the removed agent was selected, clear selection
     if (selectedAgentId === agentId) {
       setSelectedAgentId(null);
     }
-    
+
     // If no agents left, switch back to legacy mode
     if (allAgents.length === 0) {
       setLegacyMode(true);
@@ -162,7 +166,7 @@ function App() {
         <div className="text-center flex flex-col">
           <div className="w-16 mx-auto h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
           <h2 className="text-white mx-auto text-xl font-semibold mb-2">Build Your Dream</h2>
-          <p className="text-slate-400 mx-auto">Initializing AI agents...</p>
+          <p className="text-slate-400 mx-auto">Starting up your workspace...</p>
         </div>
       </div>
     );
@@ -177,32 +181,34 @@ function App() {
       <div className="flex h-full">
         {/* Sidebar */}
         <div className="w-64 h-full" data-onboarding="sidebar">
-          <Sidebar 
+          <Sidebar
             agents={currentAgents}
             selectedAgentId={selectedAgentId}
             onAgentSelect={handleAgentSelect}
             onAgentCreated={handleAgentCreated}
             onAgentRemoved={handleAgentRemoved}
             activeFolder={projectPath}
+            setShowAddAgent={setShowAddAgent}
           />
         </div>
-        
+
         {/* Chat Area or File Viewer */}
         <div className="flex-1 h-full" data-onboarding="chat">
           {selectedFile ? (
-            <FileViewer 
+            <FileViewer
               selectedFile={selectedFile}
               onClose={handleCloseFile}
             />
           ) : (
-            <ChatArea 
+            <ChatArea
               messages={currentMessages}
               agents={currentAgents}
               selectedAgentId={selectedAgentId}
+              onAddAgent={() => setShowAddAgent(true)}
             />
           )}
         </div>
-        
+
         {/* File Manager (replacing Project Panel) */}
         <div className="w-80 h-full" data-onboarding="project">
           <FileManager
@@ -215,37 +221,60 @@ function App() {
       </div>
 
       {/* Overlay UI Elements */}
-      <div className="absolute top-4 right-4 z-30">
-        <div className="flex items-center gap-2">
-          {/* MCP Manager Button */}
+      {/* <div className="absolute top-4 right-4 z-30">
+        <div className="flex items-center gap-2"> 
           <button
             onClick={() => setShowMCPManager(true)}
-            className="p-2  hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
+            className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
             title="Manage MCP Servers"
           >
             <Server className="w-4 h-4" />
-          </button>
-          
-          {/* Connection Status */}
+          </button> 
           <ConnectionStatus
             isConnected={settings.isApiKeyValid}
             onSettingsClick={() => setShowSettings(true)}
           />
         </div>
-      </div>
+      </div> */}
 
       <div className="absolute bottom-4 left-4 z-30 flex gap-2">
-        <button 
+        <button
           onClick={handleStartOnboarding}
-          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-lg"
+          className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
+          title="Help Tour"
         >
-          Help Tour
+          <HelpCircle className="w-5 h-5" />
         </button>
-        <div data-onboarding="new-project">
-          <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow-lg">
-            New Project
-          </button>
-        </div>
+
+        {/* Add Agent Button */}
+        <button
+          onClick={() => setShowAddAgent(true)}
+          className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
+          title="Add New Agent"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
+
+        {/* MCP Manager Button */}
+        <button
+          onClick={() => setShowMCPManager(true)}
+          className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
+          title="Manage MCP Servers"
+        >
+          <Server className="w-5 h-5" />
+        </button>
+
+        {/* Settings Button */}
+        <button
+          onClick={() => setShowSettings(true)}
+          className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
+          title="Settings"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
+
+
+
       </div>
 
       {/* Modals */}
@@ -271,6 +300,15 @@ function App() {
         isOpen={showMCPManager}
         onClose={() => setShowMCPManager(false)}
       />
+
+      {/* Add Agent Modal */}
+      <AddAgentModal
+        isOpen={showAddAgent}
+        onClose={() => setShowAddAgent(false)}
+        onAgentCreated={handleAgentCreated}
+        activeFolder={projectPath}
+      />
+
     </div>
   );
 }

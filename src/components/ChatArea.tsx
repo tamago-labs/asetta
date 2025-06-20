@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Agent } from '../types/agent';
 import { LegacyAgent } from '../data/agentTemplates';
 import clsx from 'clsx';
-import { Copy, FileText, Send, Plus, Paperclip, Bot, Sparkles } from 'lucide-react';
+import { Copy, FileText, Send, Plus, Paperclip, Bot, Sparkles, Building2 } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -76,7 +76,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center max-w-md mx-auto px-6">
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Bot className="w-10 h-10 text-white" />
+              <Building2 className="w-10 h-10 text-white" />
             </div>
             
             <h3 className="text-2xl font-semibold text-white mb-3">

@@ -3,7 +3,6 @@ import { Agent } from '../types/agent';
 import { LegacyAgent } from '../data/agentTemplates';
 import clsx from 'clsx';
 import { Settings, Plus, Search, Trash2, MoreVertical } from 'lucide-react';
-import { AddAgentModal } from './AddAgentModal';
 
 interface SidebarProps {
   agents: (Agent | LegacyAgent)[];
@@ -12,6 +11,7 @@ interface SidebarProps {
   onAgentCreated?: (agentId: string) => void;
   onAgentRemoved?: (agentId: string) => void;
   activeFolder?: string | null;
+  setShowAddAgent?: (flag: boolean) => void
 }
 
 const statusColors = {
@@ -29,7 +29,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onAgentRemoved,
   activeFolder
 }) => {
-  const [showAddAgent, setShowAddAgent] = useState(false);
+   
   const [agentMenuOpen, setAgentMenuOpen] = useState<string | null>(null);
 
   // Close agent menu when clicking outside
@@ -148,13 +148,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     );
   };
 
-  const handleAgentCreated = (agentId: string) => {
-    setShowAddAgent(false);
-    if (onAgentCreated) {
-      onAgentCreated(agentId);
-    }
-  };
-
   return (
     <div className="w-full h-screen bg-slate-800 border-r border-slate-700 flex flex-col">
       {/* Header */}
@@ -164,13 +157,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <h1 className="text-white font-bold text-lg">Build Your Dream</h1>
             <p className="text-slate-400 text-sm">v.0.1.0</p>
           </div>
-          <button
+          {/* <button
             onClick={() => setShowAddAgent(true)}
             className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
             title="Add New Agent"
           >
             <Plus className="w-4 h-4" />
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -220,12 +213,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
  
       {/* Add Agent Modal */}
-      <AddAgentModal
+      {/* <AddAgentModal
         isOpen={showAddAgent}
         onClose={() => setShowAddAgent(false)}
         onAgentCreated={handleAgentCreated}
         activeFolder={activeFolder}
-      />
+      /> */}
     </div>
   );
 };
