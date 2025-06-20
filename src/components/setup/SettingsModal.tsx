@@ -400,7 +400,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <select
                       value={localSettings.theme}
                       onChange={(e) => setLocalSettings(prev => ({ ...prev, theme: e.target.value as 'dark' | 'light' }))}
-                      className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-blue-500"
+                      className="px-3 py-2   border border-slate-600 rounded-lg text-black focus:border-blue-500"
                     >
                       <option value="dark">Dark</option>
                       <option value="light">Light</option>

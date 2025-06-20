@@ -343,68 +343,90 @@ export class MCPService {
 
   getServerTemplates(): MCPServerConfig[] {
     return [
+      // AWS Development Tools
       {
-        name: 'nodit-mcp',
-        command: 'npx',
-        args: ['@noditlabs/nodit-mcp-server@latest'],
+        name: 'frontend-mcp',
+        command: 'uvx',
+        args: ['awslabs.frontend-mcp-server@latest'],
         env: {
-          NODIT_API_KEY: 'YOUR_NODIT_API_KEY'
+          FASTMCP_LOG_LEVEL: 'ERROR'
         },
-        description: 'Provides tools to discover and interact with Nodit Web3 APIs and data infrastructure.',
-        category: 'web3'
+        description: 'React and modern web development guidance with AWS integration',
+        category: 'development'
       },
       {
-        name: 'aptos-mcp',
-        command: 'npx',
-        args: ['-y', '@tamago-labs/aptos-mcp', '--aptos_private_key=YOUR_PRIVATE_KEY', '--aptos_network=mainnet'],
-        description: 'Comprehensive Aptos blockchain DeFi toolkit with 40+ tools for DEX, lending, staking, and smart contracts',
-        category: 'web3'
+        name: 'aws-diagram-mcp',
+        command: 'uvx',
+        args: ['awslabs.aws-diagram-mcp-server@latest'],
+        env: {
+          AWS_PROFILE: 'YOUR_AWS_PROFILE',
+          AWS_REGION: 'us-east-1',
+          FASTMCP_LOG_LEVEL: 'ERROR'
+        },
+        description: 'Generate architecture diagrams and technical illustrations',
+        category: 'development'
+      },
+      // {
+      //   name: 'code-documentation-gen',
+      //   command: 'uvx',
+      //   args: ['awslabs.code-doc-gen-mcp-server@latest'],
+      //   env: {
+      //     FASTMCP_LOG_LEVEL: 'ERROR'
+      //   },
+      //   description: 'Auto-generate documentation from your codebase analysis',
+      //   category: 'development'
+      // },
+      // AWS Conversational Assistants
+      {
+        name: 'aws-documentation-mcp',
+        command: 'uvx',
+        args: ['awslabs.aws-documentation-mcp-server@latest'],
+        env: {
+          FASTMCP_LOG_LEVEL: 'ERROR'
+        },
+        description: 'Get latest AWS docs and API references for accurate technical answers',
+        category: 'conversational'
       },
       {
-        name: 'sui-mcp',
-        command: 'npx',
-        args: ['-y', '@tamago-labs/sui-mcp', '--sui_private_key=YOUR_PRIVATE_KEY', '--sui_network=mainnet'],
-        description: 'MCP for Sui blockchain ecosytem with 33+ tools covering account management, DeFi protocols, development, staking, and market data',
-        category: 'web3'
+        name: 'bedrock-data-automation',
+        command: 'uvx',
+        args: ['awslabs.aws-bedrock-data-automation-mcp-server@latest'],
+        env: {
+          AWS_PROFILE: 'YOUR_AWS_PROFILE',
+          AWS_REGION: 'us-east-1',
+          FASTMCP_LOG_LEVEL: 'ERROR'
+        },
+        description: 'Analyze documents, images, videos, and audio files using Amazon Bedrock',
+        category: 'conversational'
       },
       {
-        name: 'xrpl-mcp',
-        command: 'npx',
-        args: ['-y', '@tamago-labs/xrpl-mcp', '--xrpl_private_key=YOUR_PRIVATE_KEY', '--xrpl_network=mainnet'],
-        description: 'MCP for the XRP Ledger allows managing wallet operations, token creation, NFTs, and DEX trading',
-        category: 'web3'
+        name: 'bedrock-knowledge-base',
+        command: 'uvx',
+        args: ['awslabs.bedrock-kb-retrieval-mcp-server@latest'],
+        env: {
+          AWS_PROFILE: 'YOUR_AWS_PROFILE',
+          AWS_REGION: 'us-east-1',
+          FASTMCP_LOG_LEVEL: 'ERROR'
+        },
+        description: 'Query enterprise knowledge bases with citation support using Amazon Bedrock',
+        category: 'conversational'
       },
+      
+      
+      
+      // Legacy Web3 Servers (for backward compatibility)
       {
         name: 'story-protocol-mcp',
         command: 'npx',
         args: ['-y', '@tamago-labs/story-protocol-mcp', '--private_key=YOUR_PRIVATE_KEY'],
-        description: 'Story Protocol MCP for IP asset management, licensing, and blockchain operations',
+        description: 'Story Protocol MCP for IP asset management and licensing',
         category: 'web3'
-      },
-      {
-        name: 'chainlink-mcp',
-        command: 'npx', 
-        args: ['-y', '@tamago-labs/chainlink-mcp', '--private_key=YOUR_PRIVATE_KEY'],
-        description: 'Chainlink MCP for oracle data feeds, price feeds, and decentralized services',
-        category: 'web3'
-      },
-      {
-        name: 'aws-mcp',
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-aws'],
-        env: {
-          AWS_ACCESS_KEY_ID: 'YOUR_AWS_ACCESS_KEY',
-          AWS_SECRET_ACCESS_KEY: 'YOUR_AWS_SECRET_KEY',
-          AWS_REGION: 'us-east-1'
-        },
-        description: 'AWS cloud services integration for EC2, S3, Lambda, and other AWS resources',
-        category: 'custom'
       },
       {
         name: 'web-search',
         command: 'npx',
         args: ['-y', '@modelcontextprotocol/server-web-search'],
-        description: 'Web search and scraping capabilities',
+        description: 'Web search and content scraping capabilities for research and documentation',
         category: 'search'
       }
     ];

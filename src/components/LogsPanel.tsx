@@ -190,7 +190,7 @@ export const LogsPanel: React.FC<LogsPanelProps> = ({ className = '' }) => {
             <select
               value={selectedLevel}
               onChange={(e) => setSelectedLevel(e.target.value as any)}
-              className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-black text-sm"
+              className="w-full   border border-slate-600 rounded px-3 py-2 text-black text-sm"
             >
               <option value="all">All Levels</option>
               <option value="info">Info</option>
@@ -203,7 +203,7 @@ export const LogsPanel: React.FC<LogsPanelProps> = ({ className = '' }) => {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-black text-sm"
+              className="w-full  border border-slate-600 rounded px-3 py-2 text-black text-sm"
             >
               <option value="all">All Categories</option>
               {categories.map(category => (

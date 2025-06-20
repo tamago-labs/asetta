@@ -175,9 +175,7 @@ function App() {
   }
 
   return (
-    <div className="h-screen w-screen bg-slate-900 text-white overflow-hidden">
-      {/* Test component to generate sample logs */}
-      {/* <LogsTestComponent /> */}
+    <div className="h-screen w-screen bg-slate-900 text-white overflow-hidden"> 
       
       <div className="flex h-full">
         {/* Sidebar */}

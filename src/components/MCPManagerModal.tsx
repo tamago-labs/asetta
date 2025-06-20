@@ -184,6 +184,10 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
         return <ExternalLink className="w-4 h-4" />;
       case 'search':
         return <Terminal className="w-4 h-4" />;
+      case 'conversational':
+        return <Activity className="w-4 h-4" />;
+      case 'development':
+        return <Wrench className="w-4 h-4" />;
       default:
         return <Wrench className="w-4 h-4" />;
     }
@@ -199,6 +203,10 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
         return 'text-purple-400';
       case 'search':
         return 'text-orange-400';
+      case 'conversational':
+        return 'text-purple-400';
+      case 'development':
+        return 'text-blue-400';
       default:
         return 'text-gray-400';
     }
@@ -232,11 +240,10 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
         <div className="flex border-b border-slate-700">
           <button
             onClick={() => setActiveTab('servers')}
-            className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${
-              activeTab === 'servers'
+            className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${activeTab === 'servers'
                 ? 'text-purple-400 border-b-2 border-purple-400 bg-purple-500/10'
                 : 'text-slate-400 hover:text-white'
-            }`}
+              }`}
           >
             <Server className="w-4 h-4" />
             Servers
@@ -246,11 +253,10 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
           </button>
           <button
             onClick={() => setActiveTab('templates')}
-            className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${
-              activeTab === 'templates'
+            className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${activeTab === 'templates'
                 ? 'text-purple-400 border-b-2 border-purple-400 bg-purple-500/10'
                 : 'text-slate-400 hover:text-white'
-            }`}
+              }`}
           >
             <Layout className="w-4 h-4" />
             Templates
@@ -260,11 +266,10 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
           </button>
           <button
             onClick={() => setActiveTab('logs')}
-            className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${
-              activeTab === 'logs'
+            className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${activeTab === 'logs'
                 ? 'text-purple-400 border-b-2 border-purple-400 bg-purple-500/10'
                 : 'text-slate-400 hover:text-white'
-            }`}
+              }`}
           >
             <Activity className="w-4 h-4" />
             Logs
@@ -281,7 +286,7 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
                   <div>
                     <h3 className="text-lg font-medium text-white">Running Servers</h3>
                     <p className="text-slate-400 text-sm">Manage your MCP server instances</p>
-                  </div> 
+                  </div>
                 </div>
               </div>
 
@@ -422,70 +427,221 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
           )}
 
           {activeTab === 'templates' && (
-            <div className="h-full overflow-y-auto p-6">
-              <div className="mb-6">
-                <h3 className="text-lg font-medium text-white  ">Server Templates</h3>
-                <p className="text-slate-400 text-sm">Available MCP server templates. Click to add to your servers.</p>
-              </div>
+            <div className="h-full overflow-y-auto">
+              {/* Template Categories */}
+              <div className="p-6">
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium text-white mb-2">Server Templates</h3>
+                  <p className="text-slate-400 text-sm">Available MCP server templates. Click to add to your servers.</p>
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {serverTemplates.map((template) => (
-                  <div
-                    key={template.name}
-                    className="border border-slate-700 rounded-lg p-4 bg-slate-800/50 hover:bg-slate-800/70 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className={`flex items-center gap-2 ${getCategoryColor(template.category)}`}>
-                          {getCategoryIcon(template.category)}
+                {/* AWS Development Tools */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <h4 className="text-md font-medium text-white">AWS Development Tools</h4>
+                    <span className="text-xs bg-blue-900/50 text-blue-300 px-2 py-1 rounded">Code Generation & Documentation</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {serverTemplates.filter(template => template.category === 'development').map((template) => (
+                      <div
+                        key={template.name}
+                        className="border border-slate-700 rounded-lg p-4 bg-slate-800/50 hover:bg-slate-800/70 transition-colors"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`flex items-center gap-2 ${getCategoryColor(template.category)}`}>
+                              {getCategoryIcon(template.category)}
+                            </div>
+                            <div>
+                              <span className="font-medium text-white text-sm">
+                                {template.name}
+                              </span>
+                              <div className="text-xs text-slate-400 capitalize">
+                                {template.category}
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              setSelectedTemplate(template.name);
+                              setCustomArgs(template.args.join(' '));
+                              setCustomEnv(template.env || {});
+                              setShowAddServer(true);
+                            }}
+                            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium"
+                          >
+                            Add Server
+                          </button>
                         </div>
-                        <div>
-                          <span className="font-medium text-white text-sm">
-                            {template.name}
-                          </span>
-                          <div className="text-xs text-slate-400 capitalize">
-                            {template.category}
+
+                        <div className="text-xs text-slate-300 mb-3">
+                          {template.description}
+                        </div>
+
+                        <div className="bg-slate-900/50 rounded p-2">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Terminal className="w-3 h-3 text-slate-400" />
+                            <span className="text-xs text-slate-400">Command</span>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(`${template.command} ${template.args.join(' ')}`);
+                              }}
+                              className="ml-auto p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"
+                              title="Copy command"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <div className="font-mono text-xs text-green-300 break-all">
+                            {template.command} {template.args.join(' ')}
                           </div>
                         </div>
                       </div>
+                    ))}
+                  </div>
+                </div>
 
-                      <button
-                        onClick={() => {
-                          setSelectedTemplate(template.name);
-                          setCustomArgs(template.args.join(' '));
-                          setCustomEnv(template.env || {});
-                          setShowAddServer(true);
-                        }}
-                        className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium"
+                {/* AWS Conversational Assistants */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                    <h4 className="text-md font-medium text-white">AWS Conversational Assistants</h4>
+                    <span className="text-xs bg-purple-900/50 text-purple-300 px-2 py-1 rounded">Chatbots & AI Agents</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {serverTemplates.filter(template => template.category === 'conversational').map((template) => (
+                      <div
+                        key={template.name}
+                        className="border border-slate-700 rounded-lg p-4 bg-slate-800/50 hover:bg-slate-800/70 transition-colors"
                       >
-                        Add Server
-                      </button>
-                    </div>
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`flex items-center gap-2 ${getCategoryColor(template.category)}`}>
+                              {getCategoryIcon(template.category)}
+                            </div>
+                            <div>
+                              <span className="font-medium text-white text-sm">
+                                {template.name}
+                              </span>
+                              <div className="text-xs text-slate-400 capitalize">
+                                {template.category}
+                              </div>
+                            </div>
+                          </div>
 
-                    <div className="text-xs text-slate-300 mb-3">
-                      {template.description}
-                    </div>
+                          <button
+                            onClick={() => {
+                              setSelectedTemplate(template.name);
+                              setCustomArgs(template.args.join(' '));
+                              setCustomEnv(template.env || {});
+                              setShowAddServer(true);
+                            }}
+                            className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium"
+                          >
+                            Add Server
+                          </button>
+                        </div>
 
-                    <div className="bg-slate-900/50 rounded p-2">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Terminal className="w-3 h-3 text-slate-400" />
-                        <span className="text-xs text-slate-400">Command</span>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(`${template.command} ${template.args.join(' ')}`);
-                          }}
-                          className="ml-auto p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"
-                          title="Copy command"
+                        <div className="text-xs text-slate-300 mb-3">
+                          {template.description}
+                        </div>
+
+                        <div className="bg-slate-900/50 rounded p-2">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Terminal className="w-3 h-3 text-slate-400" />
+                            <span className="text-xs text-slate-400">Command</span>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(`${template.command} ${template.args.join(' ')}`);
+                              }}
+                              className="ml-auto p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"
+                              title="Copy command"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <div className="font-mono text-xs text-green-300 break-all">
+                            {template.command} {template.args.join(' ')}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+
+
+                {/* Other Servers */}
+                {serverTemplates.filter(template => !['conversational', 'development'].includes(template.category)).length > 0 && (
+                  <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                      <h4 className="text-md font-medium text-white">Other MCP Servers</h4>
+                      <span className="text-xs bg-gray-900/50 text-gray-300 px-2 py-1 rounded">Additional Tools</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {serverTemplates.filter(template => !['conversational', 'development'].includes(template.category)).map((template) => (
+                        <div
+                          key={template.name}
+                          className="border border-slate-700 rounded-lg p-4 bg-slate-800/50 hover:bg-slate-800/70 transition-colors"
                         >
-                          <Copy className="w-3 h-3" />
-                        </button>
-                      </div>
-                      <div className="font-mono text-xs text-green-300 break-all">
-                        {template.command} {template.args.join(' ')}
-                      </div>
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className={`flex items-center gap-2 ${getCategoryColor(template.category)}`}>
+                                {getCategoryIcon(template.category)}
+                              </div>
+                              <div>
+                                <span className="font-medium text-white text-sm">
+                                  {template.name}
+                                </span>
+                                <div className="text-xs text-slate-400 capitalize">
+                                  {template.category}
+                                </div>
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={() => {
+                                setSelectedTemplate(template.name);
+                                setCustomArgs(template.args.join(' '));
+                                setCustomEnv(template.env || {});
+                                setShowAddServer(true);
+                              }}
+                              className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-xs font-medium"
+                            >
+                              Add Server
+                            </button>
+                          </div>
+
+                          <div className="text-xs text-slate-300 mb-3">
+                            {template.description}
+                          </div>
+
+                          <div className="bg-slate-900/50 rounded p-2">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Terminal className="w-3 h-3 text-slate-400" />
+                              <span className="text-xs text-slate-400">Command</span>
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(`${template.command} ${template.args.join(' ')}`);
+                                }}
+                                className="ml-auto p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"
+                                title="Copy command"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </button>
+                            </div>
+                            <div className="font-mono text-xs text-green-300 break-all">
+                              {template.command} {template.args.join(' ')}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           )}
@@ -509,7 +665,7 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
                   <select
                     value={selectedTemplate}
                     onChange={(e) => setSelectedTemplate(e.target.value)}
-                    className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+                    className="w-full  border border-slate-600 rounded px-3 py-2 text-black"
                   >
                     <option value="">Select a template...</option>
                     {serverTemplates.map((template) => (
@@ -580,7 +736,7 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
                             </button>
                           </div>
                         ))}
-                        
+
                         <button
                           onClick={addEnvVar}
                           className="w-full mt-2 py-2 border border-dashed border-slate-500 rounded text-sm text-slate-400 hover:text-slate-300 hover:border-slate-400 transition-colors"
