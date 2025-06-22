@@ -1,9 +1,11 @@
-import  { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { ChatArea } from './components/ChatArea'; 
 import { FileManager } from './components/FileManager';
 import { FileViewer } from './components/FileViewer';
-import { WelcomeScreen } from './components/setup/WelcomeScreen';
+import { WelcomeScreen as SetupWelcomeScreen } from './components/setup/WelcomeScreen';
+import { WelcomeScreen as ModeWelcomeScreen } from './components/welcome/WelcomeScreen';
+import { TradingMode } from './components/trading/TradingMode';
 import { SettingsModal } from './components/setup/SettingsModal';
 import { MCPManagerModal } from './components/MCPManagerModal';
 import { AddAgentModal } from './components/AddAgentModal'; 
@@ -16,7 +18,10 @@ import { FileInfo } from './types/files';
 import { Agent } from './types/agent';
 import { Server, Settings, HelpCircle, Plus } from 'lucide-react';
 
+type AppMode = 'setup' | 'welcome' | 'trading' | 'creator';
+
 function App() {
+  const [appMode, setAppMode] = useState<AppMode>('setup');
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -43,6 +48,7 @@ function App() {
         setIsAuthenticated(true);
         setProjectPath(savedSettings.workspace?.defaultFolder || null);
         authService.updateLastLogin();
+        setAppMode('welcome'); // Go to mode selection if already set up
       }
       setIsLoading(false);
     };
@@ -108,6 +114,7 @@ function App() {
     setSettings(newSettings);
     setIsAuthenticated(true);
     setProjectPath(formData.workspaceFolder || null);
+    setAppMode('welcome'); // Go to mode selection after setup
   };
 
   const handleSettingsUpdate = (updatedSettings: AppSettings) => {
@@ -120,7 +127,7 @@ function App() {
   };
 
   const handleResetApp = () => {
-    // Clear all settings and return to welcome screen
+    // Clear all settings and return to setup screen
     authService.logout();
     localStorage.removeItem('hasSeenOnboarding');
     setSettings(null);
@@ -130,6 +137,7 @@ function App() {
     setSelectedAgentId(null);
     setProjectPath(null);
     setSelectedFile(null);
+    setAppMode('setup');
   };
 
   const handleAgentSelect = (agentId: string) => {
@@ -153,6 +161,10 @@ function App() {
     setSelectedFile(null);
   };
 
+  const handleModeSelect = (mode: 'trading' | 'creator') => {
+    setAppMode(mode);
+  };
+
   // Use real agents if available, otherwise show empty state
   const currentAgents = legacyMode && realAgents.length === 0 ? [] : realAgents;
   const currentMessages = legacyMode ? [] : [];
@@ -170,146 +182,151 @@ function App() {
     );
   }
 
-  if (!isAuthenticated || !settings) {
-    return <WelcomeScreen onSetupComplete={handleSetupComplete} />;
+  // Show setup screen first
+  if (appMode === 'setup' || !isAuthenticated || !settings) {
+    return <SetupWelcomeScreen onSetupComplete={handleSetupComplete} />;
   }
 
-  return (
-    <div className="h-screen w-screen bg-slate-900 text-white overflow-hidden"> 
-      
-      <div className="flex h-full">
-        {/* Sidebar */}
-        <div className="w-64 h-full" data-onboarding="sidebar">
-          <Sidebar
-            agents={currentAgents}
-            selectedAgentId={selectedAgentId}
-            onAgentSelect={handleAgentSelect}
-            onAgentCreated={handleAgentCreated}
-            onAgentRemoved={handleAgentRemoved}
-            activeFolder={projectPath}
-            setShowAddAgent={setShowAddAgent}
-          />
-        </div>
+  // Show mode selection screen
+  if (appMode === 'welcome') {
+    return <ModeWelcomeScreen onModeSelect={handleModeSelect} />;
+  }
 
-        {/* Chat Area or File Viewer */}
-        <div className="flex-1 h-full" data-onboarding="chat">
-          {selectedFile ? (
-            <FileViewer
-              selectedFile={selectedFile}
-              onClose={handleCloseFile}
-            />
-          ) : (
-            <ChatArea
-              messages={currentMessages}
+  // Show trading mode
+  if (appMode === 'trading') {
+    return <TradingMode onBackToWelcome={() => setAppMode('welcome')} />;
+  }
+
+  // Creator mode interface (your existing app)
+  if (appMode === 'creator') {
+    return (
+      <div className="h-screen w-screen bg-slate-900 text-white overflow-hidden"> 
+        
+        <div className="flex h-full">
+          {/* Sidebar */}
+          <div className="w-64 h-full" data-onboarding="sidebar">
+            <Sidebar
               agents={currentAgents}
               selectedAgentId={selectedAgentId}
-              onAddAgent={() => setShowAddAgent(true)}
+              onAgentSelect={handleAgentSelect}
+              onAgentCreated={handleAgentCreated}
+              onAgentRemoved={handleAgentRemoved}
+              activeFolder={projectPath}
+              setShowAddAgent={setShowAddAgent}
             />
-          )}
+          </div>
+
+          {/* Chat Area or File Viewer */}
+          <div className="flex-1 h-full" data-onboarding="chat">
+            {selectedFile ? (
+              <FileViewer
+                selectedFile={selectedFile}
+                onClose={handleCloseFile}
+              />
+            ) : (
+              <ChatArea
+                messages={currentMessages}
+                agents={currentAgents}
+                selectedAgentId={selectedAgentId}
+                onAddAgent={() => setShowAddAgent(true)}
+              />
+            )}
+          </div>
+
+          {/* File Manager (replacing Project Panel) */}
+          <div className="w-80 h-full" data-onboarding="project">
+            <FileManager
+              projectPath={projectPath}
+              onFileSelect={handleFileSelect}
+              selectedFile={selectedFile}
+              onProjectPathChange={setProjectPath}
+            />
+          </div>
         </div>
 
-        {/* File Manager (replacing Project Panel) */}
-        <div className="w-80 h-full" data-onboarding="project">
-          <FileManager
-            projectPath={projectPath}
-            onFileSelect={handleFileSelect}
-            selectedFile={selectedFile}
-            onProjectPathChange={setProjectPath}
-          />
-        </div>
-      </div>
+        <div className="absolute bottom-4 left-4 z-30 flex gap-2">
+          <button
+            onClick={() => setAppMode('welcome')}
+            className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
+            title="Back to Mode Selection"
+          >
+            ←
+          </button>
 
-      {/* Overlay UI Elements */}
-      {/* <div className="absolute top-4 right-4 z-30">
-        <div className="flex items-center gap-2"> 
+          <button
+            onClick={handleStartOnboarding}
+            className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
+            title="Help Tour"
+          >
+            <HelpCircle className="w-5 h-5" />
+          </button>
+
+          {/* Add Agent Button */}
+          <button
+            onClick={() => setShowAddAgent(true)}
+            className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
+            title="Add New Agent"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+
+          {/* MCP Manager Button */}
           <button
             onClick={() => setShowMCPManager(true)}
-            className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
+            className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
             title="Manage MCP Servers"
           >
-            <Server className="w-4 h-4" />
-          </button> 
-          <ConnectionStatus
-            isConnected={settings.isApiKeyValid}
-            onSettingsClick={() => setShowSettings(true)}
-          />
+            <Server className="w-5 h-5" />
+          </button>
+
+          {/* Settings Button */}
+          <button
+            onClick={() => setShowSettings(true)}
+            className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
+            title="Settings"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
         </div>
-      </div> */}
 
-      <div className="absolute bottom-4 left-4 z-30 flex gap-2">
-        <button
-          onClick={handleStartOnboarding}
-          className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
-          title="Help Tour"
-        >
-          <HelpCircle className="w-5 h-5" />
-        </button>
+        {/* Modals */}
+        {showSettings && (
+          <SettingsModal
+            isOpen={showSettings}
+            onClose={() => setShowSettings(false)}
+            settings={settings}
+            onSettingsUpdate={handleSettingsUpdate}
+            onResetApp={handleResetApp}
+          />
+        )}
 
-        {/* Add Agent Button */}
-        <button
-          onClick={() => setShowAddAgent(true)}
-          className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
-          title="Add New Agent"
-        >
-          <Plus className="w-5 h-5" />
-        </button>
+        {showOnboarding && (
+          <OnboardingManager
+            isActive={showOnboarding}
+            onComplete={handleOnboardingComplete}
+          />
+        )}
 
-        {/* MCP Manager Button */}
-        <button
-          onClick={() => setShowMCPManager(true)}
-          className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
-          title="Manage MCP Servers"
-        >
-          <Server className="w-5 h-5" />
-        </button>
+        {/* MCP Manager Modal */}
+        <MCPManagerModal
+          isOpen={showMCPManager}
+          onClose={() => setShowMCPManager(false)}
+        />
 
-        {/* Settings Button */}
-        <button
-          onClick={() => setShowSettings(true)}
-          className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
-          title="Settings"
-        >
-          <Settings className="w-5 h-5" />
-        </button>
-
-
+        {/* Add Agent Modal */}
+        <AddAgentModal
+          isOpen={showAddAgent}
+          onClose={() => setShowAddAgent(false)}
+          onAgentCreated={handleAgentCreated}
+          activeFolder={projectPath}
+        />
 
       </div>
+    );
+  }
 
-      {/* Modals */}
-      {showSettings && (
-        <SettingsModal
-          isOpen={showSettings}
-          onClose={() => setShowSettings(false)}
-          settings={settings}
-          onSettingsUpdate={handleSettingsUpdate}
-          onResetApp={handleResetApp}
-        />
-      )}
-
-      {showOnboarding && (
-        <OnboardingManager
-          isActive={showOnboarding}
-          onComplete={handleOnboardingComplete}
-        />
-      )}
-
-      {/* MCP Manager Modal */}
-      <MCPManagerModal
-        isOpen={showMCPManager}
-        onClose={() => setShowMCPManager(false)}
-      />
-
-      {/* Add Agent Modal */}
-      <AddAgentModal
-        isOpen={showAddAgent}
-        onClose={() => setShowAddAgent(false)}
-        onAgentCreated={handleAgentCreated}
-        activeFolder={projectPath}
-      />
-
-    </div>
-  );
+  // Default fallback
+  return null;
 }
 
 export default App;
