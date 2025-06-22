@@ -21,6 +21,7 @@ interface FileManagerProps {
   onFileSelect: (file: FileInfo) => void;
   selectedFile: FileInfo | null;
   onProjectPathChange: (path: string) => void;
+  onHide?: () => void; // Optional hide function
 }
 
 interface TreeNode extends FileInfo {
@@ -33,7 +34,8 @@ export const FileManager: React.FC<FileManagerProps> = ({
   projectPath, 
   onFileSelect, 
   selectedFile,
-  onProjectPathChange 
+  onProjectPathChange,
+  onHide
 }) => {
   const [files, setFiles] = useState<TreeNode[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -203,6 +205,15 @@ export const FileManager: React.FC<FileManagerProps> = ({
             >
               <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
             </button>
+            {onHide && (
+              <button
+                onClick={onHide}
+                className="p-1 text-slate-400 hover:text-white hover:bg-slate-700 rounded transition-colors"
+                title="Hide File Explorer"
+              >
+                <X size={16} />
+              </button>
+            )}
             <button
               onClick={handleSelectFolder}
               className="p-1 text-slate-400 hover:text-white hover:bg-slate-700 rounded transition-colors"

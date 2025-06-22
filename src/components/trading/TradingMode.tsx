@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Server, Settings, HelpCircle, Plus } from 'lucide-react';
+import { ArrowLeft, Server, Settings, HelpCircle, Plus, FileText, X } from 'lucide-react';
 import { RWAProject } from '../../types/trading';
 import { TradingSidebar } from './sidebar/TradingSidebar';
 import { HomeView } from './project/HomeView';
@@ -23,6 +23,7 @@ export const TradingMode: React.FC<TradingModeProps> = ({ onBackToWelcome }) => 
   const [showSettings, setShowSettings] = useState(false);
   const [showMCPManager, setShowMCPManager] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showFileManager, setShowFileManager] = useState(false); // Default hidden for trading mode
 
   useEffect(() => {
     // Load settings
@@ -395,16 +396,32 @@ export const TradingMode: React.FC<TradingModeProps> = ({ onBackToWelcome }) => 
           )}
         </div>
 
-        {/* File Manager */}
-        <div className="w-80 h-full">
-          <FileManager
-            projectPath={settings?.workspace?.defaultFolder || null}
-            onFileSelect={() => {}}
-            selectedFile={null}
-            onProjectPathChange={() => {}}
-          />
-        </div>
+        {/* File Manager - Toggleable */}
+        {showFileManager && (
+          <div className="w-80 h-full">
+            <FileManager
+              projectPath={settings?.workspace?.defaultFolder || null}
+              onFileSelect={() => {}}
+              selectedFile={null}
+              onProjectPathChange={() => {}}
+              onHide={() => setShowFileManager(false)}
+            />
+          </div>
+        )}
       </div>
+
+      {/* Top Right Controls */}
+      {!showFileManager && (
+        <div className="absolute top-4 right-4 z-30">
+          <button
+            onClick={() => setShowFileManager(true)}
+            className="p-2 hover:bg-slate-700 rounded-lg transition-colors bg-slate-800 shadow-lg text-slate-400 hover:text-white"
+            title="Show File Explorer"
+          >
+            <FileText className="w-5 h-5" />
+          </button>
+        </div>
+      )}
 
       {/* Bottom Controls */}
       <div className="absolute bottom-4 left-4 z-30 flex gap-2">
