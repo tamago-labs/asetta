@@ -26,7 +26,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
   const steps = [
     {
       id: 'welcome',
-      title: 'Welcome to Build Your Dream',
+      title: 'Welcome to Asseta.xyz',
       description: 'Transform your assets into digital tokens with AI-powered assistance'
     },
     {
@@ -132,7 +132,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
               <Building2 className="w-12 h-12 text-white" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-white mb-6">Build Your Dream</h2>
+              <h2 className="text-3xl font-bold text-white mb-6">Asseta</h2>
               <p className="text-slate-300 text-lg leading-relaxed max-w-2xl mx-auto">
                 Transform your valuable assets into digital tokens with the power of AI. 
                 Real estate, commodities, art collections - all tokenized in minutes, not months.

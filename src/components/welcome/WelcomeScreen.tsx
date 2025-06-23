@@ -11,7 +11,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onModeSelect }) =>
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            Build Your Dream
+          Asseta
           </h1>
           <p className="text-xl text-slate-400 max-w-2xl mx-auto">
             Create and trade Real World Assets (RWA) with AI-powered tools

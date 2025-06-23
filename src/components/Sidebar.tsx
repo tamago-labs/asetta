@@ -154,16 +154,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-4 border-b border-slate-700 flex-shrink-0">
         <div className="flex items-center justify-between mb-0">
           <div>
-            <h1 className="text-white font-bold text-lg">Build Your Dream</h1>
+            <h1 className="text-white font-bold text-lg">Asseta</h1>
             <p className="text-slate-400 text-sm">v.0.1.0</p>
-          </div>
-          {/* <button
-            onClick={() => setShowAddAgent(true)}
-            className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
-            title="Add New Agent"
-          >
-            <Plus className="w-4 h-4" />
-          </button> */}
+          </div> 
         </div>
       </div>
 

@@ -1,18 +1,18 @@
-# Build Your Dream - Web3 RWA MCP Desktop Application
+# Asseta.xyz - Web3 RWA MCP Desktop Application
 
 > **Multi-Agent Orchestration for Web3 Real World Assets using AWS and Chainlink**
 
-Build Your Dream is a Tauri desktop application that leverages Model Context Protocol (MCP) to enable multi-agent orchestration for building Web3 Real World Asset (RWA) projects. The platform integrates AWS cloud services and Chainlink oracles to create comprehensive blockchain solutions for asset tokenization, featuring specialized MCP servers for different blockchain ecosystems including Story Protocol for IP assets.
+Asseta.xyz is a Tauri desktop application that leverages Model Context Protocol (MCP) to enable multi-agent orchestration for building Web3 Real World Asset (RWA) projects. The platform integrates AWS cloud services and Chainlink oracles to create comprehensive blockchain solutions for asset tokenization, featuring specialized MCP servers for different blockchain ecosystems including Story Protocol for IP assets.
 
-![Build Your Dream](https://img.shields.io/badge/Platform-Desktop-blue)
+![Asseta.xyz](https://img.shields.io/badge/Platform-Desktop-blue)
 ![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?logo=typescript)
 ![Tauri](https://img.shields.io/badge/Tauri-2+-24C8DB?logo=tauri)
 ![MCP](https://img.shields.io/badge/MCP-Protocol-purple)
 
-## 🚀 **What is Build Your Dream?**
+## 🚀 **What is Asseta.xyz?**
 
-Build Your Dream is a revolutionary desktop application that uses Model Context Protocol (MCP) to orchestrate multiple AI agents for Web3 Real World Asset development. The platform provides a unified interface to manage blockchain projects that integrate:
+Asseta.xyz is a revolutionary desktop application that uses Model Context Protocol (MCP) to orchestrate multiple AI agents for Web3 Real World Asset development. The platform provides a unified interface to manage blockchain projects that integrate:
 
 - **🔗 Multiple Blockchain Networks**: Aptos, Sui, XRPL, Story Protocol
 - **☁️ AWS Cloud Services**: Infrastructure automation and deployment
@@ -31,13 +31,11 @@ The application features a comprehensive MCP server management system with pre-c
 | Server | Description | Tools | Category |
 |--------|-------------|-------|----------|
 | **Filesystem** | File operations and project navigation | File read/write, directory listing | Core |
-| **Story Protocol** | IP asset management and licensing | Asset registration, licensing, royalties | Web3 |
-| **Chainlink** | Oracle data feeds and services | Price feeds, VRF, automation | Web3 |
-| **Aptos MCP** | Aptos blockchain DeFi toolkit | DEX, lending, staking, contracts | Web3 |
-| **Sui MCP** | Sui blockchain ecosystem tools | Account management, DeFi protocols | Web3 |
-| **XRPL MCP** | XRP Ledger operations | Wallet ops, tokens, NFTs, DEX | Web3 |
-| **Nodit MCP** | Web3 API and data infrastructure | Blockchain data discovery | Web3 |
-| **AWS MCP** | Cloud services integration | EC2, S3, Lambda management | Cloud |
+| **Smart Contract MCP** | 50+ tools for smart contract development | Aptos CLI, Sui CLI, Foundry for Move/Solidity | Web3 |
+| **AWS Amplify Frontend** | Frontend web application deployment | Build, customize, deploy web apps | AWS |
+| **AWS S3** | Object storage and file management | Storage, file ops, static hosting | AWS |
+| **AWS ECS** | Container orchestration service | Container deployment, orchestration | AWS |
+| **AWS Lambda** | Serverless function development | Function deployment, serverless ops | AWS |
 | **Web Search** | Research and documentation | Web search, content scraping | Utility |
 
 ### **MCP Features**
@@ -174,42 +172,57 @@ src-tauri/
 
 ## 🔧 **MCP Server Configuration**
 
-### **Web3 Blockchain Servers**
+### **Smart Contract Development**
 
-#### **Story Protocol MCP**
+#### **Smart Contract MCP**
 ```bash
-npx -y @tamago-labs/story-protocol-mcp --private_key=YOUR_PRIVATE_KEY
+npx -y @tamago-labs/smart-contract-mcp
 ```
-- IP asset registration and management
-- Licensing and royalty distribution
-- Revenue tracking and analytics
+**Prerequisites:**
+- **Foundry** (for Ethereum/EVM): `curl -L https://foundry.paradigm.xyz | bash && foundryup`
+- **Aptos CLI**: `curl -fsSL "https://aptos.dev/scripts/install_cli.py" | python3`
+- **Sui CLI**: `cargo install --locked --git https://github.com/MystenLabs/sui.git --branch testnet sui`
 
-#### **Chainlink MCP**
+**Features:**
+- 50+ MCP tools for comprehensive smart contract development
+- Multi-blockchain support: Aptos (Move), Sui (Move), Ethereum/EVM (Solidity)
+- CLI integration for Move and Solidity development and testing
+- Production-ready tools for deployment, testing, and contract interaction
+
+### **AWS Cloud Services**
+
+#### **AWS Amplify Frontend MCP**
 ```bash
-npx -y @tamago-labs/chainlink-mcp --private_key=YOUR_PRIVATE_KEY
-```
-- Price feed integrations
-- VRF (Verifiable Random Functions)
-- Automation and upkeep services
-
-#### **Aptos MCP**
-```bash
-npx -y @tamago-labs/aptos-mcp --aptos_private_key=YOUR_KEY --aptos_network=mainnet
-```
-- 40+ DeFi tools for DEX, lending, staking
-- Smart contract deployment and management
-- Move language development tools
-
-### **Cloud Infrastructure**
-
-#### **AWS MCP**
-```bash
-npx -y @modelcontextprotocol/server-aws
+npx -y @aws/mcp-server-amplify-frontend
 ```
 Environment variables:
+- `AWS_REGION`: Target AWS region (e.g., us-east-1)
 - `AWS_ACCESS_KEY_ID`: Your AWS access key
 - `AWS_SECRET_ACCESS_KEY`: Your AWS secret key
-- `AWS_REGION`: Target AWS region (e.g., us-east-1)
+
+#### **AWS S3 MCP**
+```bash
+npx -y @aws/mcp-server-s3
+```
+- Object storage and file management
+- Static website hosting operations
+- Bucket management and configuration
+
+#### **AWS ECS MCP**
+```bash
+npx -y @aws/mcp-server-ecs
+```
+- Container orchestration and deployment
+- Service management and scaling
+- Task definition and cluster operations
+
+#### **AWS Lambda MCP**
+```bash
+npx -y @aws/mcp-server-lambda
+```
+- Serverless function development and deployment
+- Function management and monitoring
+- Event trigger configuration
 
 ---
 
@@ -217,23 +230,26 @@ Environment variables:
 
 The application features intelligent AI agents that can use MCP tools to perform real blockchain operations:
 
-### **Example Workflow: RWA Tokenization**
+### **Example Workflow: Smart Contract Development**
 
-1. **💬 User**: "Help me tokenize a $5M real estate property on Story Protocol"
+1. **💬 User**: "Help me create a multi-chain DeFi protocol with Move contracts on Aptos and Solidity contracts on Ethereum"
 
 2. **🤖 AI Agent**: Uses multiple MCP tools:
-   - **Filesystem**: Creates project structure
-   - **Story Protocol**: Registers IP asset
-   - **Chainlink**: Sets up price feeds
-   - **AWS**: Deploys infrastructure
-   - **Web Search**: Researches compliance requirements
+   - **Filesystem**: Creates project structure and manages code files
+   - **Smart Contract MCP**: 
+     - Aptos CLI tools for Move contract development
+     - Sui CLI tools for Move testing and deployment
+     - Foundry tools for Solidity contract creation
+   - **AWS S3**: Stores contract artifacts and documentation
+   - **AWS Lambda**: Deploys backend services for protocol interaction
+   - **Web Search**: Researches best practices and security patterns
 
-3. **📊 Result**: Complete tokenization platform with:
-   - Smart contracts deployed
-   - IP licensing configured
-   - Price oracles connected
-   - Infrastructure running
-   - Compliance documentation
+3. **📊 Result**: Complete multi-chain DeFi protocol with:
+   - Move contracts deployed on Aptos and Sui
+   - Solidity contracts deployed on Ethereum
+   - AWS infrastructure for cross-chain operations
+   - Frontend deployed via AWS Amplify
+   - Comprehensive testing and documentation
 
 ---
 
