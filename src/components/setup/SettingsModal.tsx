@@ -289,8 +289,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
 
                   {keyValidationResult && (
-                    <div className={`mt-2 flex items-center text-sm ${keyValidationResult.isValid ? 'text-green-400' : 'text-red-400'
-                      }`}>
+                    <div className={`mt-2 flex items-center text-sm ${
+                      keyValidationResult.isValid ? 'text-green-400' : 'text-red-400'
+                    }`}>
                       {keyValidationResult.isValid ? (
                         <>
                           <Check className="w-4 h-4 mr-2" />
@@ -308,11 +309,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                 <div className="bg-slate-700 p-4 rounded-lg">
                   <h4 className="text-white font-medium mb-2">Connection Status</h4>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${localSettings.isAccessKeyValid ? 'bg-green-400' : 'bg-red-400'}`} />
-                    <span className="text-sm text-slate-300">
-                      {localSettings.isAccessKeyValid ? 'Connected to Asseta.xyz' : 'Not connected'}
-                    </span>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-400" />
+                      <span className="text-sm text-slate-300">
+                        Claude AI ready (via AWS Bedrock)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        localSettings.isAccessKeyValid ? 'bg-green-400' : 'bg-red-400'
+                      }`} />
+                      <span className="text-sm text-slate-300">
+                        {localSettings.isAccessKeyValid ? 'Connected to Asseta.xyz' : 'Not connected'}
+                      </span>
+                    </div>
                   </div>
                 </div>
 

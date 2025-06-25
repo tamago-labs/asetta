@@ -156,7 +156,7 @@ function App() {
 
   // Use real agents if available, otherwise show empty state
   const currentAgents = legacyMode && realAgents.length === 0 ? [] : realAgents;
-  const currentMessages = legacyMode ? [] : [];
+  const currentMessages: any[] = []; // For now, messages are handled locally in ChatArea
   const showEmptyState = currentAgents.length === 0;
 
   if (isLoading) {

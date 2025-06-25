@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Agent } from '../types/agent';
 import { LegacyAgent } from '../data/agentTemplates';
+import { ClaudeService, ChatMessage } from '../services/claudeService';
 import clsx from 'clsx';
-import { Copy, FileText, Send, Plus, Paperclip, Bot, Sparkles, Building2 } from 'lucide-react';
+import { Copy, FileText, Send, Plus, Paperclip, Bot, AlertCircle } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -10,6 +11,7 @@ interface Message {
   content: string;
   timestamp: Date;
   type: 'text' | 'code' | 'file' | 'system';
+  sender: 'user' | 'assistant';
   metadata?: {
     language?: string;
     fileName?: string;
@@ -26,16 +28,23 @@ interface ChatAreaProps {
 
 export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAgentId, onAddAgent }) => {
   const [newMessage, setNewMessage] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [localMessages, setLocalMessages] = useState<Message[]>([]);
+  const [claudeService, setClaudeService] = useState<ClaudeService | null>(null); 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const getAgent = (agentId: string) => agents.find(a => a.id === agentId);
 
-  const filteredMessages = selectedAgentId 
-    ? messages.filter(m => m.agentId === selectedAgentId)
-    : messages;
+  // Always use all messages (no agent filtering needed for now)
+  const allMessages = [...messages, ...localMessages];
+
+  useEffect(() => {
+    // Initialize Claude service
+    const service = new ClaudeService();
+        setClaudeService(service);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [filteredMessages]);
+  }, [allMessages]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', { 
@@ -49,107 +58,117 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
     navigator.clipboard.writeText(text);
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newMessage.trim()) {
-      // In a real app, this would send the message to the backend
-      console.log('Sending message:', newMessage);
-      setNewMessage('');
+    if (!newMessage.trim() || isStreaming || !claudeService) return;
+
+    const userMessageId = `msg_${Date.now()}_user`;
+    const assistantMessageId = `msg_${Date.now()}_assistant`;
+    
+    // Add user message
+    const userMessage: Message = {
+      id: userMessageId,
+      agentId: 'claude',
+      content: newMessage.trim(),
+      timestamp: new Date(),
+      type: 'text',
+      sender: 'user'
+    };
+
+    setLocalMessages(prev => [...prev, userMessage]);
+    const currentMessage = newMessage.trim();
+    setNewMessage('');
+    setIsStreaming(true);
+
+    try {
+      // Convert messages to Claude format for history
+      const chatHistory: ChatMessage[] = allMessages.map(msg => ({
+        id: msg.id,
+        sender: msg.sender,
+        content: msg.content,
+        timestamp: msg.timestamp
+      }));
+
+      // Start streaming response
+      let responseContent = '';
+      const assistantMessage: Message = {
+        id: assistantMessageId,
+        agentId: 'claude',
+        content: '',
+        timestamp: new Date(),
+        type: 'text',
+        sender: 'assistant'
+      };
+
+      setLocalMessages(prev => [...prev, assistantMessage]);
+
+      // Stream Claude's response
+      const stream = claudeService.streamChat(chatHistory, currentMessage);
+
+      for await (const chunk of stream) {
+        responseContent += chunk;
+        
+        // Update the assistant message content in real-time
+        setLocalMessages(prev => 
+          prev.map(msg => 
+            msg.id === assistantMessageId 
+              ? { ...msg, content: responseContent }
+              : msg
+          )
+        );
+      }
+
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      
+      // Add error message
+      const errorMessage: Message = {
+        id: `error_${Date.now()}`,
+        agentId: 'claude',
+        content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        timestamp: new Date(),
+        type: 'system',
+        sender: 'assistant'
+      };
+      
+      setLocalMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsStreaming(false);
     }
   };
 
-  // Show empty state when no agents are available
-  if (agents.length === 0) {
-    return (
-      <div className="w-full h-full flex flex-col bg-slate-900">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-700 bg-slate-800 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold text-white text-lg">AI Agent Workspace</h2>
-              <p className="text-sm text-slate-400">Get started by adding your first AI agent</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Empty State */}
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center max-w-md mx-auto px-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Building2 className="w-10 h-10 text-white" />
-            </div>
-            
-            <h3 className="text-2xl font-semibold text-white mb-3">
-              Welcome to Asseta
-            </h3>
-            
-            <p className="text-slate-400 mb-8 leading-relaxed">
-              Create specialized AI agents to help with your Web3 RWA projects. Each agent has unique expertise and can connect to MCP servers for advanced capabilities.
-            </p>
-            
-            <button
-              onClick={onAddAgent}
-              className="inline-flex items-center gap-3 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg hover:shadow-xl"
-            >
-              <Plus className="w-5 h-5" />
-              Add Your First Agent
-            </button>
-            
-            <div className="mt-8 grid grid-cols-2 gap-4 text-sm">
-              <div className="bg-slate-800/50 rounded-lg p-4 text-left">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 bg-purple-500 rounded-lg flex items-center justify-center text-xs">🔗</div>
-                  <span className="text-white font-medium">Smart Contract</span>
-                </div>
-                <p className="text-slate-400 text-xs">Solidity development & blockchain integration</p>
-              </div>
-              
-              <div className="bg-slate-800/50 rounded-lg p-4 text-left">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 bg-orange-500 rounded-lg flex items-center justify-center text-xs">☁️</div>
-                  <span className="text-white font-medium">AWS Infrastructure</span>
-                </div>
-                <p className="text-slate-400 text-xs">Cloud architecture & deployment</p>
-              </div>
-              
-              <div className="bg-slate-800/50 rounded-lg p-4 text-left">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center text-xs">💻</div>
-                  <span className="text-white font-medium">Full-Stack Dev</span>
-                </div>
-                <p className="text-slate-400 text-xs">React, Node.js & Web3 integration</p>
-              </div>
-              
-              <div className="bg-slate-800/50 rounded-lg p-4 text-left">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 bg-red-500 rounded-lg flex items-center justify-center text-xs">⚖️</div>
-                  <span className="text-white font-medium">Legal Compliance</span>
-                </div>
-                <p className="text-slate-400 text-xs">SEC regulations & compliance</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const renderMessage = (message: Message) => {
-    const agent = getAgent(message.agentId);
-    if (!agent) return null;
-
+    const isUser = message.sender === 'user';
+    const isStreamingMessage = isStreaming && message.sender === 'assistant' && message.id === localMessages[localMessages.length - 1]?.id;
+    
     return (
       <div key={message.id} className="group hover:bg-slate-800/30 px-4 py-3 transition-colors">
         <div className="flex items-start space-x-3">
           <div className="flex-shrink-0">
-            <div className={clsx('w-9 h-9 rounded-lg flex items-center justify-center text-sm font-medium', agent.color)}>
-              {agent.avatar}
-            </div>
+            {isUser ? (
+              <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-sm font-medium text-white">
+                U
+              </div>
+            ) : (
+              <div className="w-9 h-9 rounded-lg bg-purple-600 flex items-center justify-center text-sm font-medium text-white">
+                <Bot className="w-5 h-5" />
+              </div>
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline space-x-2">
-              <span className="font-semibold text-white">{agent.name}</span>
+              <span className="font-semibold text-white">
+                {isUser ? 'You' : 'Claude'}
+              </span>
               <span className="text-xs text-slate-400">{formatTime(message.timestamp)}</span>
+              {isStreamingMessage && (
+                <div className="flex items-center space-x-1 text-xs text-blue-400">
+                  <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></div>
+                  <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                  <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                  <span className="ml-1">typing...</span>
+                </div>
+              )}
             </div>
             <div className="mt-1">
               {message.type === 'code' ? (
@@ -178,14 +197,19 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
                   </pre>
                 </div>
               ) : message.type === 'system' ? (
-                <div className="bg-blue-900/20 border border-blue-700/30 rounded-lg p-3 mt-2">
-                  <div className="text-sm text-blue-200 font-medium">{message.content}</div>
+                <div className="bg-red-900/20 border border-red-700/30 rounded-lg p-3 mt-2">
+                  <div className="text-sm text-red-200 font-medium">{message.content}</div>
                 </div>
               ) : (
                 <div className="text-slate-200 text-sm leading-relaxed mt-1">
                   {message.content.split('\n').map((line, index) => (
                     <div key={index} className="whitespace-pre-wrap">{line}</div>
                   ))}
+                  {isStreamingMessage && message.content && (
+                    <div className="inline-flex items-center ml-1">
+                      <div className="w-2 h-4 bg-blue-400 animate-pulse rounded-sm"></div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -201,31 +225,19 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
       <div className="px-6 py-4 border-b border-slate-700 bg-slate-800 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            {selectedAgentId ? (
-              <>
-                <div className={clsx('w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium', 
-                  getAgent(selectedAgentId)?.color)}>
-                  {getAgent(selectedAgentId)?.avatar}
-                </div>
-                <div>
-                  <h2 className="font-semibold text-white text-lg">
-                    # {getAgent(selectedAgentId)?.name.toLowerCase().replace(' ', '-')}
-                  </h2>
-                  <p className="text-sm text-slate-400">{getAgent(selectedAgentId)?.description}</p>
-                </div>
-              </>
-            ) : (
-              <div>
-                <h2 className="font-semibold text-white text-lg"># general</h2>
-                <p className="text-sm text-slate-400">All agent communications</p>
-              </div>
-            )}
+            <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
+              <Bot className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white text-lg"># claude-chat</h2>
+              <p className="text-sm text-slate-400">Chat with Claude AI assistant</p>
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-1 text-xs text-slate-400">
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span>{agents.filter(a => a.status === 'online').length} online</span>
-            </div>
+              <div className={`w-2 h-2 rounded-full ${'bg-green-400'}`}></div>
+              <span>{'Online'}</span>
+            </div> 
           </div>
         </div>
       </div>
@@ -233,19 +245,13 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
       {/* Messages */}
       <div className="flex-1 overflow-y-auto min-h-0">
         <div className="py-2">
-          {filteredMessages.length > 0 ? (
-            filteredMessages.map(renderMessage)
-          ) : selectedAgentId ? (
-            <div className="px-6 text-center text-slate-400 mt-12">
-              <div className="text-4xl mb-4">💬</div>
-              <h3 className="text-lg font-medium mb-2">No messages yet</h3>
-              <p className="text-sm">Start a conversation with {getAgent(selectedAgentId)?.name}!</p>
-            </div>
+          {allMessages.length > 0 ? (
+            allMessages.map(renderMessage)
           ) : (
             <div className="px-6 text-center text-slate-400 mt-12">
-              <div className="text-4xl mb-4">👋</div>
-              <h3 className="text-lg font-medium mb-2">Welcome to your workspace</h3>
-              <p className="text-sm">Select an agent from the sidebar to start chatting!</p>
+              <div className="text-4xl mb-4">🤖</div>
+              <h3 className="text-lg font-medium mb-2">Welcome to Claude Chat</h3>
+              <p className="text-sm">Start a conversation with Claude AI. I can help with coding, explanations, creative writing, and more!</p>
             </div>
           )}
           <div ref={messagesEndRef} />
@@ -253,24 +259,19 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
       </div>
 
       {/* Message Input */}
-      <div className="p-4 border-t border-slate-700 bg-slate-800 flex-shrink-0">
+      <div className="p-4 border-t border-slate-700 bg-slate-800 flex-shrink-0"> 
         <form onSubmit={handleSendMessage}>
           <div className="flex items-end space-x-3">
-            <button 
-              type="button"
-              className="flex-shrink-0 p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-            >
-              <Plus size={20} />
-            </button>
             <div className="flex-1 relative">
               <textarea
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder={selectedAgentId 
-                  ? `Message ${getAgent(selectedAgentId)?.name}...`
-                  : "Message all agents..."
+                placeholder={ isStreaming 
+                    ? "Claude is typing..."
+                    : "Message Claude..."
                 }
-                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-colors"
+                disabled={ isStreaming}
+                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 rows={1}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -279,19 +280,17 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
                   }
                 }}
               />
-              <button 
-                type="button"
-                className="absolute right-12 top-1/2 transform -translate-y-1/2 p-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded transition-colors"
-              >
-                <Paperclip size={16} />
-              </button>
             </div>
             <button 
               type="submit"
-              disabled={!newMessage.trim()}
-              className="flex-shrink-0 p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+              disabled={!newMessage.trim() || isStreaming}
+              className="flex-shrink-0 p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
             >
-              <Send size={20} />
+              {isStreaming ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Send size={20} />
+              )}
             </button>
           </div>
         </form>

@@ -10,27 +10,27 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.53.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.700.0",
     "@modelcontextprotocol/sdk": "^1.10.2",
     "@monaco-editor/react": "^4.6.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
     "@tauri-apps/api": "^2.5.0",
-    "@tauri-apps/plugin-opener": "^2.2.7",
     "@tauri-apps/plugin-dialog": "^2.2.2",
     "@tauri-apps/plugin-fs": "^2.3.0",
+    "@tauri-apps/plugin-opener": "^2.2.7",
+    "@tauri-apps/cli": "^2",
+    "clsx": "^2.1.0",
     "lucide-react": "^0.344.0",
-    "clsx": "^2.1.0"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
-  "devDependencies": {
+  "devDependencies": { 
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "typescript": "~5.6.2",
-    "vite": "^6.0.3",
-    "@tauri-apps/cli": "^2",
-    "tailwindcss": "^3.4.1",
     "autoprefixer": "^10.4.17",
-    "postcss": "^8.4.35"
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.3"
   }
 }
