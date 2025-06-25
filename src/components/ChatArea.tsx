@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Agent } from '../types/agent';
 import { LegacyAgent } from '../data/agentTemplates';
 import { ClaudeService, ChatMessage } from '../services/claudeService';
+import { mcpService } from '../services/mcpService';
 import clsx from 'clsx';
 import { Copy, FileText, Send, Plus, Paperclip, Bot, AlertCircle } from 'lucide-react';
 
@@ -82,12 +83,14 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
 
     try {
       // Convert messages to Claude format for history
-      const chatHistory: ChatMessage[] = allMessages.map(msg => ({
-        id: msg.id,
-        sender: msg.sender,
-        content: msg.content,
-        timestamp: msg.timestamp
-      }));
+      const chatHistory: ChatMessage[] = allMessages
+        .filter(msg => msg.type !== 'system') // Exclude system messages from history
+        .map(msg => ({
+          id: msg.id,
+          sender: msg.sender,
+          content: msg.content,
+          timestamp: msg.timestamp
+        }));
 
       // Start streaming response
       let responseContent = '';
@@ -202,9 +205,30 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
                 </div>
               ) : (
                 <div className="text-slate-200 text-sm leading-relaxed mt-1">
-                  {message.content.split('\n').map((line, index) => (
-                    <div key={index} className="whitespace-pre-wrap">{line}</div>
-                  ))}
+                  {message.content.includes('🔧 Using') ? (
+                    // Handle tool usage messages with special formatting
+                    <div className="space-y-2">
+                      {message.content.split('\n').map((line, index) => {
+                        if (line.includes('🔧 Using')) {
+                          return (
+                            <div key={index} className="inline-flex items-center gap-2 bg-blue-900/20 text-blue-300 px-2 py-1 rounded text-xs font-medium">
+                              <span>{line}</span>
+                            </div>
+                          );
+                        }
+                        return line ? (
+                          <div key={index} className="whitespace-pre-wrap">{line}</div>
+                        ) : (
+                          <br key={index} />
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    // Regular text content
+                    message.content.split('\n').map((line, index) => (
+                      <div key={index} className="whitespace-pre-wrap">{line}</div>
+                    ))
+                  )}
                   {isStreamingMessage && message.content && (
                     <div className="inline-flex items-center ml-1">
                       <div className="w-2 h-4 bg-blue-400 animate-pulse rounded-sm"></div>
@@ -230,7 +254,18 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
             </div>
             <div>
               <h2 className="font-semibold text-white text-lg"># claude-chat</h2>
-              <p className="text-sm text-slate-400">Chat with Claude AI assistant</p>
+              <p className="text-sm text-slate-400">
+                Chat with Claude AI assistant
+                {(() => {
+                  try {
+                    const availableTools = mcpService.getAvailableTools();
+                    const toolCount = availableTools.reduce((total, server) => total + server.tools.length, 0);
+                    return toolCount > 0 ? ` • ${toolCount} MCP tools available` : '';
+                  } catch {
+                    return '';
+                  }
+                })()}
+              </p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -251,7 +286,18 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
             <div className="px-6 text-center text-slate-400 mt-12">
               <div className="text-4xl mb-4">🤖</div>
               <h3 className="text-lg font-medium mb-2">Welcome to Claude Chat</h3>
-              <p className="text-sm">Start a conversation with Claude AI. I can help with coding, explanations, creative writing, and more!</p>
+              <p className="text-sm">
+                Start a conversation with Claude AI. I can help with coding, explanations, creative writing, and more!
+                {(() => {
+                  try {
+                    const availableTools = mcpService.getAvailableTools();
+                    const toolCount = availableTools.reduce((total, server) => total + server.tools.length, 0);
+                    return toolCount > 0 ? ` I also have access to ${toolCount} MCP tools for advanced operations.` : '';
+                  } catch {
+                    return '';
+                  }
+                })()}
+              </p>
             </div>
           )}
           <div ref={messagesEndRef} />
