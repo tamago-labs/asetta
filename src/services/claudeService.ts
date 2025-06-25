@@ -24,7 +24,7 @@ export class ClaudeService {
 
   constructor() {
     const awsConfig = this.getAwsConfig();
-    
+
     this.client = new BedrockRuntimeClient({
       region: awsConfig.awsRegion,
       credentials: {
@@ -237,13 +237,13 @@ export class ClaudeService {
 
     // Add workspace context to current message if workspace is open
     let contextualMessage = currentMessage;
-    if (workspaceRoot && chatHistory.length === 0) {
-      // First message of the conversation - add workspace context
-      contextualMessage = `My current folder is: ${workspaceRoot}\n\n${currentMessage}`;
-    } else if (workspaceRoot && (currentMessage.toLowerCase().includes('file') || currentMessage.toLowerCase().includes('directory') || currentMessage.toLowerCase().includes('folder'))) {
-      // Message mentions files/directories - remind about workspace
-      contextualMessage = `(Working in: ${workspaceRoot})\n${currentMessage}`;
-    }
+    // if (workspaceRoot && chatHistory.length === 0) {
+    //   // First message of the conversation - add workspace context
+    //   contextualMessage = `My current folder is: ${workspaceRoot}\n\n${currentMessage}`;
+    // } else if (workspaceRoot && (currentMessage.toLowerCase().includes('file') || currentMessage.toLowerCase().includes('directory') || currentMessage.toLowerCase().includes('folder'))) {
+    //   // Message mentions files/directories - remind about workspace
+    //   contextualMessage = `(Working in: ${workspaceRoot})\n${currentMessage}`;
+    // }
 
     // Add current message
     messages.push({
@@ -260,6 +260,71 @@ export class ClaudeService {
     return messages;
   }
 
+  // private buildSystemPrompt(): string {
+  //   const workspaceRoot = mcpService.getWorkspaceRoot();
+  //   const availableTools = mcpService.getAvailableTools();
+
+  //   const folderInfo = workspaceRoot
+  //     ? `\n\nCurrent workspace: ${workspaceRoot}\nIMPORTANT: When users ask about files, directories, or code, they are referring to files in this workspace unless explicitly stated otherwise. Always use the workspace root as your base path for file operations.`
+  //     : '\n\nNo workspace open. User needs to open a folder first to work with files.';
+
+  //   const toolsInfo = availableTools.length > 0
+  //     ? `\nAvailable MCP tools: ${availableTools.map(st => st.tools.map(t => t.name).join(', ')).join(', ')}`
+  //     : '';
+
+  //   return `You are Claude, an expert AI assistant specializing in Real World Asset (RWA) tokenization
+  
+  // **Your Core Expertise:**
+  // - Real World Asset tokenization (real estate, commodities, art, IP assets, etc.)
+  // - Smart contract development (Solidity, Move on Aptos/Sui)
+  // - Blockchain protocols (Ethereum, Aptos, Sui, XRPL, Story Protocol)
+  // - AWS cloud infrastructure and deployment
+  // - Legal compliance and regulatory frameworks (SEC, securities law)
+  // - Financial modeling and tokenomics design
+  // - Due diligence and asset valuation
+  
+  // **Your Role:**
+  // You help users build end-to-end RWA tokenization projects from concept to deployment. This includes:
+  // - Analyzing business models and tokenization strategies
+  // - Reviewing legal documents, contracts, and compliance requirements
+  // - Designing smart contracts for asset representation and management
+  // - Creating frontend applications for investor portals
+  // - Setting up cloud infrastructure and deployment pipelines
+  // - Implementing security best practices and audit procedures
+  
+  // **Working with Project Files:**
+  // ${folderInfo}
+  
+  // When users share documents, always:
+  // 1. Read and analyze the content thoroughly
+  // 2. Identify key requirements, constraints, and opportunities
+  // 3. Suggest specific implementation approaches
+  // 4. Highlight potential legal/regulatory considerations
+  // 5. Recommend next steps and related files to create/review
+  
+  // **Available Technical Tools:**
+  // ${toolsInfo}
+  
+  // **Communication Style:**
+  // - Be practical and actionable - focus on implementation details
+  // - Always consider regulatory compliance and legal implications
+  // - Suggest specific code, documentation, or processes
+  // - Break down complex tokenization concepts into clear steps
+  // - Reference relevant regulations (SEC, MiCA, etc.) when applicable
+  // - Propose concrete next steps for project advancement
+  
+  // **Key Focus Areas:**
+  // - Asset legal structure and ownership verification
+  // - Token design (utility vs security tokens)
+  // - Smart contract architecture and security
+  // - Investor onboarding and KYC/AML processes
+  // - Secondary market design and liquidity mechanisms
+  // - Regulatory compliance automation
+  // - Financial reporting and transparency tools
+  
+  // Remember: Every RWA project must balance innovation with regulatory compliance. Always consider both technical feasibility and legal requirements in your recommendations.`;
+  // }
+
   private buildSystemPrompt(): string {
     const workspaceRoot = mcpService.getWorkspaceRoot();
     const availableTools = mcpService.getAvailableTools();
@@ -269,10 +334,25 @@ export class ClaudeService {
       : '\n\nNo workspace open. User needs to open a folder first to work with files.';
 
     const toolsInfo = availableTools.length > 0
-      ? `\nAvailable tools: ${availableTools.map(st => st.tools.map(t => t.name).join(', ')).join(', ')}`
+      ? `\nAvailable MCP tools: ${availableTools.map(st => st.tools.map(t => t.name).join(', ')).join(', ')}`
       : '';
 
-    return `You are a helpful AI assistant.${folderInfo}${toolsInfo}\n\nBe clear, explain what you're doing, and suggest related actions.`;
+    return `You are Claude, an expert AI assistant specializing in Real World Asset (RWA) tokenization
+  
+  **Working with Project Files:**
+  ${folderInfo}
+  
+  When users share documents, always:
+  1. Read and analyze the content thoroughly
+  2. Identify key requirements, constraints, and opportunities
+  3. Suggest specific implementation approaches
+  4. Highlight potential legal/regulatory considerations
+  5. Recommend next steps and related files to create/review
+  
+  **Available Tools:**
+  ${toolsInfo}
+   
+  Remember: Every RWA project must balance innovation with regulatory compliance. Always consider both technical feasibility and legal requirements in your recommendations.`;
   }
 
   // Test connection method
