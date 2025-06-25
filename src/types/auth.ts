@@ -11,16 +11,16 @@ export interface UserProfile {
 export interface WorkspaceSettings {
   id: string;
   name: string;
-  defaultFolder: string;  // Changed from defaultFolderPath
+  defaultFolder: string;
   description?: string;
   createdAt: Date;
 }
 
 export interface AppSettings {
-  apiKey: string;
-  isApiKeyValid: boolean;
+  accessKey: string;
+  isAccessKeyValid: boolean;
   currentWorkspaceId: string;
-  workspace?: WorkspaceSettings;  // Add optional workspace reference
+  workspace?: WorkspaceSettings;
   workspaces: WorkspaceSettings[];
   userProfile: UserProfile;
   theme: 'dark' | 'light';
@@ -47,11 +47,11 @@ export interface ApiValidationResult {
 }
 
 export interface SetupFormData {
-  apiKey: string;
+  accessKey: string;
   userName: string;
   userEmail: string;
   company?: string;
   workspaceName: string;
-  workspaceFolder: string;  // Changed from workspacePath
+  workspaceFolder: string;
   agreeToTerms: boolean;
 }

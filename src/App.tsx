@@ -7,7 +7,7 @@ import { WelcomeScreen } from './components/setup/WelcomeScreen';
 import { SettingsModal } from './components/setup/SettingsModal';
 import { MCPManagerModal } from './components/MCPManagerModal';
 import { AddAgentModal } from './components/AddAgentModal'; 
-import { ConnectionStatus, OnboardingManager } from './components/auth/AuthComponents';
+import { OnboardingManager } from './components/auth/AuthComponents';
 import { authService } from './services/auth';
 import { agentService } from './services/agentService';
 import { mcpService } from './services/mcpService'; 

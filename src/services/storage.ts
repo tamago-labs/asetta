@@ -1,17 +1,17 @@
 import { AppSettings, UserProfile, WorkspaceSettings } from '../types/auth';
 
-const STORAGE_KEY = 'build_your_dream_settings';
-const ENCRYPTION_KEY = 'byd_secure_key_v1'; // In production, this should be more secure
+const STORAGE_KEY = 'asseta_settings';
+const ENCRYPTION_KEY = 'asseta_secure_key_v1'; // In production, this should be more secure
 
 class StorageService {
-  // Simple XOR encryption for API key (in production, use proper encryption)
-  private encryptApiKey(apiKey: string): string {
-    return btoa(apiKey.split('').map((char, i) => 
+  // Simple XOR encryption for access key (in production, use proper encryption)
+  private encryptAccessKey(accessKey: string): string {
+    return btoa(accessKey.split('').map((char, i) => 
       String.fromCharCode(char.charCodeAt(0) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length))
     ).join(''));
   }
 
-  private decryptApiKey(encryptedKey: string): string {
+  private decryptAccessKey(encryptedKey: string): string {
     try {
       return atob(encryptedKey).split('').map((char, i) => 
         String.fromCharCode(char.charCodeAt(0) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length))
@@ -25,7 +25,7 @@ class StorageService {
     try {
       const encryptedSettings = {
         ...settings,
-        apiKey: this.encryptApiKey(settings.apiKey)
+        accessKey: this.encryptAccessKey(settings.accessKey)
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(encryptedSettings));
     } catch (error) {
@@ -41,7 +41,7 @@ class StorageService {
       const settings = JSON.parse(stored);
       return {
         ...settings,
-        apiKey: this.decryptApiKey(settings.apiKey)
+        accessKey: this.decryptAccessKey(settings.accessKey)
       };
     } catch (error) {
       console.error('Failed to load settings:', error);
@@ -53,10 +53,10 @@ class StorageService {
     localStorage.removeItem(STORAGE_KEY);
   }
 
-  updateApiKey(apiKey: string): void {
+  updateAccessKey(accessKey: string): void {
     const settings = this.loadSettings();
     if (settings) {
-      settings.apiKey = apiKey;
+      settings.accessKey = accessKey;
       this.saveSettings(settings);
     }
   }
@@ -100,10 +100,10 @@ class StorageService {
     const settings = this.loadSettings();
     if (!settings) return '';
     
-    // Don't export the API key for security
+    // Don't export the access key for security
     const exportData = {
       ...settings,
-      apiKey: '[REDACTED]'
+      accessKey: '[REDACTED]'
     };
     
     return JSON.stringify(exportData, null, 2);
@@ -116,10 +116,10 @@ class StorageService {
       if (importedData.userProfile && importedData.workspaces) {
         const currentSettings = this.loadSettings();
         if (currentSettings) {
-          // Merge imported data but keep current API key
+          // Merge imported data but keep current access key
           const mergedSettings = {
             ...importedData,
-            apiKey: currentSettings.apiKey
+            accessKey: currentSettings.accessKey
           };
           this.saveSettings(mergedSettings);
           return true;

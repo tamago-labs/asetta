@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { User, Building2, Key, Folder, ArrowRight, Check, AlertCircle, FolderPlus } from 'lucide-react';
 import { SetupFormData } from '../../types/auth';
-import { claudeApiService } from '../../services/claude';
 import { TauriFileService } from '../../services/fileService';
+import { invoke } from '@tauri-apps/api/core';
 
 interface WelcomeScreenProps {
   onSetupComplete: (settings: SetupFormData) => void;
@@ -11,33 +11,28 @@ interface WelcomeScreenProps {
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<SetupFormData>({
-    apiKey: '',
+    accessKey: '',
     userName: '',
     userEmail: '',
     company: '',
     workspaceName: 'My Tokenization Projects',
     workspaceFolder: '',
-    agreeToTerms: true // Auto-agree since it's a solo app
+    agreeToTerms: true
   });
-  const [isValidatingApi, setIsValidatingApi] = useState(false);
-  const [apiValidationResult, setApiValidationResult] = useState<{ isValid: boolean; error?: string } | null>(null);
+  const [isValidatingKey, setIsValidatingKey] = useState(false);
+  const [keyValidationResult, setKeyValidationResult] = useState<{ isValid: boolean; error?: string; userData?: any } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const steps = [
     {
       id: 'welcome',
-      title: 'Welcome to Asseta.xyz',
+      title: 'Welcome to Asetta.xyz',
       description: 'Transform your assets into digital tokens with AI-powered assistance'
     },
     {
-      id: 'profile',
-      title: 'What should we call you?',
-      description: 'Just a name to personalize your experience'
-    },
-    {
-      id: 'api-key',
-      title: 'Connect to Claude AI',
-      description: 'Enter your Anthropic Claude API key to enable AI agents'
+      id: 'access-key',
+      title: 'Connect Your Account',
+      description: 'Enter your access key from Asetta.xyz dashboard'
     },
     {
       id: 'workspace',
@@ -46,28 +41,56 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
     }
   ];
 
-  const handleApiKeyValidation = async () => {
-    if (!formData.apiKey.trim()) {
-      setApiValidationResult({ isValid: false, error: 'Please enter your API key' });
+  const handleAccessKeyValidation = async () => {
+    if (!formData.accessKey.trim()) {
+      setKeyValidationResult({ isValid: false, error: 'Please enter your access key' });
       return;
     }
 
-    setIsValidatingApi(true);
-    setApiValidationResult(null);
+    setIsValidatingKey(true);
+    setKeyValidationResult(null);
 
     try {
-      // const result = await claudeApiService.validateApiKey(formData.apiKey);
-      // setApiValidationResult(result);
-      setApiValidationResult({
-        isValid:true
-      })
+      const result = await invoke('validate_access_key', { accessKey: formData.accessKey }) as {
+        is_valid: boolean;
+        error?: string;
+        user_data?: {
+          firstName?: string;
+          lastName?: string;
+          email?: string;
+        };
+      };
+  
+      if (result.is_valid && result.user_data) {
+        setKeyValidationResult({
+          isValid: true,
+          userData: {
+            firstName: result.user_data.firstName,
+            lastName: result.user_data.lastName,
+            email: result.user_data.email
+          }
+        });
+
+        // Auto-fill user name from profile
+        const fullName = `${result.user_data.firstName || ''} ${result.user_data.lastName || ''}`.trim();
+        setFormData(prev => ({
+          ...prev,
+          userName: fullName || prev.userName,
+          userEmail: result.user_data?.email || prev.userEmail
+        }));
+      } else {
+        setKeyValidationResult({
+          isValid: false,
+          error: result.error || 'Invalid access key'
+        });
+      }
     } catch (error) {
-      setApiValidationResult({ 
-        isValid: false, 
-        error: 'Failed to validate API key. Please try again.' 
+      setKeyValidationResult({
+        isValid: false,
+        error: 'Failed to validate access key. Please try again.'
       });
     } finally {
-      setIsValidatingApi(false);
+      setIsValidatingKey(false);
     }
   };
 
@@ -80,7 +103,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
     } catch (error) {
       console.error('Failed to select folder:', error);
       // Fallback to a default path
-      const defaultPath = process.platform === 'win32' 
+      const defaultPath = process.platform === 'win32'
         ? 'C:\\Users\\Documents\\TokenizationProjects'
         : '~/Documents/TokenizationProjects';
       setFormData(prev => ({ ...prev, workspaceFolder: defaultPath }));
@@ -90,9 +113,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
   const canProceedToNext = () => {
     switch (currentStep) {
       case 0: return true; // Welcome step
-      case 1: return formData.userName.trim().length > 0; // Name required
-      case 2: return apiValidationResult?.isValid || false; // API key must be valid
-      case 3: return formData.workspaceName.trim() && formData.workspaceFolder.trim(); // Workspace required
+      case 1: return keyValidationResult?.isValid || false; // Access key must be valid
+      case 2: return formData.workspaceName.trim() && formData.workspaceFolder.trim(); // Workspace required
       default: return false;
     }
   };
@@ -108,11 +130,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
   const handleFinish = async () => {
     setIsLoading(true);
     try {
-      // Auto-fill email if not provided
-      if (!formData.userEmail.trim()) {
-        setFormData(prev => ({ ...prev, userEmail: `${formData.userName.toLowerCase().replace(/\s+/g, '')}@local.app` }));
-      }
-      
       // Simulate setup process
       await new Promise(resolve => setTimeout(resolve, 1500));
       onSetupComplete(formData);
@@ -132,9 +149,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
               <Building2 className="w-12 h-12 text-white" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-white mb-6">Asseta</h2>
+              <h2 className="text-3xl font-bold text-white mb-6">Asseta Creator</h2>
               <p className="text-slate-300 text-lg leading-relaxed max-w-2xl mx-auto">
-                Transform your valuable assets into digital tokens with the power of AI. 
+                Transform your valuable assets into digital tokens with the power of AI.
                 Real estate, commodities, art collections - all tokenized in minutes, not months.
               </p>
             </div>
@@ -159,92 +176,67 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
         return (
           <div className="space-y-8">
             <div className="text-center">
-              <User className="w-16 h-16 text-blue-400 mx-auto mb-6" />
-              <h2 className="text-3xl font-bold text-white mb-3">What should we call you?</h2>
-              <p className="text-slate-300 text-lg">
-                Just a name to personalize your tokenization journey
-              </p>
-            </div>
-            
-            <div className="max-w-md mx-auto">
-              <input
-                type="text"
-                value={formData.userName}
-                onChange={(e) => setFormData(prev => ({ ...prev, userName: e.target.value }))}
-                placeholder="Enter your name"
-                className="w-full px-6 py-4 bg-slate-800 border border-slate-600 rounded-xl text-white text-lg placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 text-center"
-                autoFocus
-              />
-            </div>
-          </div>
-        );
-
-      case 2:
-        return (
-          <div className="space-y-8">
-            <div className="text-center">
               <Key className="w-16 h-16 text-blue-400 mx-auto mb-6" />
-              <h2 className="text-3xl font-bold text-white mb-3">Connect to Claude AI</h2>
+              <h2 className="text-3xl font-bold text-white mb-3">Connect Your Account</h2>
               <p className="text-slate-300 text-lg">
-                Your API key enables our AI agents to help you with tokenization
+                Enter your access key from the Asseta.xyz dashboard
               </p>
             </div>
-            
+
             <div className="max-w-lg mx-auto space-y-6">
               <div>
                 <div className="relative">
                   <input
-                    type="password"
-                    value={formData.apiKey}
-                    onChange={(e) => setFormData(prev => ({ ...prev, apiKey: e.target.value }))}
-                    placeholder="sk-ant-..."
+                    type="text"
+                    value={formData.accessKey}
+                    onChange={(e) => setFormData(prev => ({ ...prev, accessKey: e.target.value }))}
+                    placeholder="Enter your access key"
                     className="w-full px-6 py-4 bg-slate-800 border border-slate-600 rounded-xl text-white text-lg placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 pr-20"
                   />
                   <button
-                    onClick={handleApiKeyValidation}
-                    disabled={isValidatingApi || !formData.apiKey.trim()}
+                    onClick={handleAccessKeyValidation}
+                    disabled={isValidatingKey || !formData.accessKey.trim()}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700"
                   >
-                    {isValidatingApi ? 'Testing...' : 'Test'}
+                    {isValidatingKey ? 'Checking...' : 'Check'}
                   </button>
                 </div>
-                
-                {apiValidationResult && (
-                  <div className={`mt-3 flex items-center justify-center text-sm ${
-                    apiValidationResult.isValid ? 'text-green-400' : 'text-red-400'
-                  }`}>
-                    {apiValidationResult.isValid ? (
+
+                {keyValidationResult && (
+                  <div className={`mt-3 flex items-center justify-center text-sm ${keyValidationResult.isValid ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                    {keyValidationResult.isValid ? (
                       <>
                         <Check className="w-5 h-5 mr-2" />
-                        API key is valid and ready to use
+                        Welcome {keyValidationResult.userData?.firstName}! Access key verified.
                       </>
                     ) : (
                       <>
                         <AlertCircle className="w-5 h-5 mr-2" />
-                        {apiValidationResult.error}
+                        {keyValidationResult.error}
                       </>
                     )}
                   </div>
                 )}
               </div>
-              
+
               <div className="bg-slate-800 p-6 rounded-xl">
-                <h4 className="text-white font-medium mb-3">Don't have an API key?</h4>
+                <h4 className="text-white font-medium mb-3">Don't have an access key?</h4>
                 <p className="text-slate-300 text-sm mb-4">
-                  Get your free Claude API key from Anthropic. It takes less than 2 minutes.
+                  Get your access key from the Asseta.xyz dashboard. Login to your account and find it in your profile section.
                 </p>
                 <button
-                  onClick={() => window.open('https://console.anthropic.com/', '_blank')}
+                  onClick={() => window.open('https://asseta.xyz', '_blank')}
                   className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
                 >
-                  Get Free API Key →
+                  Go to Dashboard →
                 </button>
               </div>
             </div>
           </div>
         );
 
-      case 3:
+      case 2:
         return (
           <div className="space-y-8">
             <div className="text-center">
@@ -254,7 +246,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
                 Choose where to store your tokenization projects and files
               </p>
             </div>
-            
+
             <div className="max-w-lg mx-auto space-y-6">
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-3">
@@ -268,7 +260,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
                   className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-3">
                   Project Folder Location
@@ -327,19 +319,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
                 className={`flex items-center ${index < steps.length - 1 ? 'flex-1' : ''}`}
               >
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
-                    index <= currentStep
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-700 text-slate-400'
-                  }`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${index <= currentStep
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-700 text-slate-400'
+                    }`}
                 >
                   {index < currentStep ? <Check className="w-5 h-5" /> : index + 1}
                 </div>
                 {index < steps.length - 1 && (
                   <div
-                    className={`flex-1 h-1 mx-6 ${
-                      index < currentStep ? 'bg-blue-600' : 'bg-slate-700'
-                    }`}
+                    className={`flex-1 h-1 mx-6 ${index < currentStep ? 'bg-blue-600' : 'bg-slate-700'
+                      }`}
                   />
                 )}
               </div>
@@ -369,7 +359,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
           >
             Back
           </button>
-          
+
           <button
             onClick={handleNext}
             disabled={!canProceedToNext()}

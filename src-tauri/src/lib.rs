@@ -4,11 +4,39 @@ use tokio::sync::Mutex;
 use tauri::State;
 use serde_json::Value;
 use serde::{Deserialize, Serialize};
+use reqwest;
 
 mod mcp;
 use mcp::MCPClient;
 
 type MCPClients = Arc<Mutex<HashMap<String, MCPClient>>>;
+
+#[derive(Debug, Serialize, Deserialize)]
+struct UserProfile {
+    #[serde(rename = "firstName")]
+    first_name: Option<String>,
+    #[serde(rename = "lastName")]
+    last_name: Option<String>,
+    email: Option<String>,
+}
+
+impl UserProfile {
+    // Check if the profile is empty (all fields are None or empty)
+    fn is_empty(&self) -> bool {
+        let first_name_empty = self.first_name.as_ref().map_or(true, |s| s.trim().is_empty());
+        let last_name_empty = self.last_name.as_ref().map_or(true, |s| s.trim().is_empty());
+        let email_empty = self.email.as_ref().map_or(true, |s| s.trim().is_empty());
+        
+        first_name_empty && last_name_empty && email_empty
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct AccessKeyValidationResult {
+    is_valid: bool,
+    error: Option<String>,
+    user_data: Option<UserProfile>,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 struct FileInfo {
@@ -18,6 +46,92 @@ struct FileInfo {
     size: Option<u64>,
     modified: Option<String>,
     extension: Option<String>,
+}
+
+#[tauri::command]
+async fn validate_access_key(access_key: String) -> Result<AccessKeyValidationResult, String> {
+    if access_key.trim().is_empty() {
+        return Ok(AccessKeyValidationResult {
+            is_valid: false,
+            error: Some("Access key cannot be empty".to_string()),
+            user_data: None,
+        });
+    }
+
+    let client = reqwest::Client::new();
+    let url = format!("https://asetta.xyz/api/profile?access_key={}", access_key);
+    
+    match client.get(&url).send().await {
+        Ok(response) => {
+            if response.status().is_success() {
+                // Try to parse as JSON first
+                match response.text().await {
+                    Ok(response_text) => {
+                        println!("[DEBUG] API Response: {}", response_text);
+                        
+                        // Check if response is empty object or empty
+                        if response_text.trim() == "{}" || response_text.trim().is_empty() {
+                            return Ok(AccessKeyValidationResult {
+                                is_valid: false,
+                                error: Some("Invalid access key. Please check your key and try again.".to_string()),
+                                user_data: None,
+                            });
+                        }
+                        
+                        // Try to parse as UserProfile
+                        match serde_json::from_str::<UserProfile>(&response_text) {
+                            Ok(user_data) => {
+                                // Check if the parsed data is actually empty
+                                if user_data.is_empty() {
+                                    Ok(AccessKeyValidationResult {
+                                        is_valid: false,
+                                        error: Some("Invalid access key. Please check your key and try again.".to_string()),
+                                        user_data: None,
+                                    })
+                                } else {
+                                    Ok(AccessKeyValidationResult {
+                                        is_valid: true,
+                                        error: None,
+                                        user_data: Some(user_data),
+                                    })
+                                }
+                            }
+                            Err(parse_error) => {
+                                println!("[DEBUG] JSON Parse Error: {}", parse_error);
+                                Ok(AccessKeyValidationResult {
+                                    is_valid: false,
+                                    error: Some("Invalid response format from server".to_string()),
+                                    user_data: None,
+                                })
+                            }
+                        }
+                    }
+                    Err(_) => {
+                        Ok(AccessKeyValidationResult {
+                            is_valid: false,
+                            error: Some("Failed to read response from server".to_string()),
+                            user_data: None,
+                        })
+                    }
+                }
+            } else {
+                println!("[DEBUG] HTTP Error: {} {}", response.status(), response.status().canonical_reason().unwrap_or("Unknown"));
+                Ok(AccessKeyValidationResult {
+                    is_valid: false,
+                    error: Some(format!("Server error: {}. Please check your access key.", response.status())),
+                    user_data: None,
+                })
+            }
+        }
+        Err(network_error) => {
+            println!("[DEBUG] Network Error: {}", network_error);
+            Ok(AccessKeyValidationResult {
+                is_valid: false,
+                error: Some("Failed to connect to server. Please check your internet connection.".to_string()),
+                user_data: None,
+            })
+        }
+    }
 }
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -237,7 +351,8 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .manage(MCPClients::default())
         .invoke_handler(tauri::generate_handler![
-            greet, 
+            greet,
+            validate_access_key,
             read_directory, 
             read_file_content, 
             write_file_content,

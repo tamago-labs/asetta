@@ -21,7 +21,7 @@ class AuthService {
 
   isAuthenticated(): boolean {
     const settings = this.loadSettings();
-    return !!(settings?.apiKey && settings?.isApiKeyValid);
+    return !!(settings?.accessKey && settings?.isAccessKeyValid);
   }
 
   saveSettings(settings: AppSettings): void {
@@ -50,10 +50,10 @@ class AuthService {
     };
 
     return {
-      apiKey: formData.apiKey,
-      isApiKeyValid: true,
+      accessKey: formData.accessKey,
+      isAccessKeyValid: true,
       currentWorkspaceId: workspaceId,
-      workspace: workspace, // Add current workspace reference
+      workspace: workspace,
       workspaces: [workspace],
       userProfile,
       theme: 'dark',

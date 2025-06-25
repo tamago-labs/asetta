@@ -17,8 +17,8 @@ import {
 } from 'lucide-react';
 import { AppSettings, WorkspaceSettings } from '../../types/auth';
 import { storageService } from '../../services/storage';
-import { claudeApiService } from '../../services/claude';
 import { TauriFileService } from '../../services/fileService';
+import { invoke } from '@tauri-apps/api/core';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -37,36 +37,59 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState('profile');
   const [localSettings, setLocalSettings] = useState<AppSettings>(settings);
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [isValidatingApi, setIsValidatingApi] = useState(false);
-  const [apiValidationResult, setApiValidationResult] = useState<{ isValid: boolean; error?: string } | null>(null);
+  const [showAccessKey, setShowAccessKey] = useState(false);
+  const [isValidatingKey, setIsValidatingKey] = useState(false);
+  const [keyValidationResult, setKeyValidationResult] = useState<{ isValid: boolean; error?: string; userData?: any } | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
     setLocalSettings(settings);
   }, [settings]);
 
-  const handleApiKeyValidation = async () => {
-    if (!localSettings.apiKey.trim()) {
-      setApiValidationResult({ isValid: false, error: 'Please enter your API key' });
+  const handleAccessKeyValidation = async () => {
+    if (!localSettings.accessKey.trim()) {
+      setKeyValidationResult({ isValid: false, error: 'Please enter your access key' });
       return;
     }
 
-    setIsValidatingApi(true);
-    setApiValidationResult(null);
+    setIsValidatingKey(true);
+    setKeyValidationResult(null);
 
     try {
-      setApiValidationResult({
-        isValid: true
-      })
-      setLocalSettings(prev => ({ ...prev, isApiKeyValid: true }));
+      const result = await invoke('validate_access_key', { accessKey: localSettings.accessKey }) as {
+        is_valid: boolean;
+        error?: string;
+        user_data?: {
+          firstName?: string;
+          lastName?: string;
+          email?: string;
+        };
+      };
+      
+      if (result.is_valid && result.user_data) {
+        setKeyValidationResult({
+          isValid: true,
+          userData: {
+            firstName: result.user_data.firstName,
+            lastName: result.user_data.lastName,
+            email: result.user_data.email
+          }
+        });
+        setLocalSettings(prev => ({ ...prev, isAccessKeyValid: true }));
+      } else {
+        setKeyValidationResult({ 
+          isValid: false, 
+          error: result.error || 'Invalid access key' 
+        });
+        setLocalSettings(prev => ({ ...prev, isAccessKeyValid: false }));
+      }
     } catch (error) {
-      setApiValidationResult({
-        isValid: false,
-        error: 'Failed to validate API key. Please try again.'
+      setKeyValidationResult({ 
+        isValid: false, 
+        error: 'Failed to validate access key. Please try again.' 
       });
     } finally {
-      setIsValidatingApi(false);
+      setIsValidatingKey(false);
     }
   };
 
@@ -89,7 +112,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'build-your-dream-settings.json';
+    a.download = 'asseta-settings.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -147,7 +170,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
-    { id: 'api', label: 'API Settings', icon: Key },
+    { id: 'access', label: 'Access Key', icon: Key },
     { id: 'workspace', label: 'Workspace', icon: Folder },
     { id: 'general', label: 'General', icon: Settings }
   ];
@@ -219,75 +242,64 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       }))}
                       className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Company (Optional)</label>
-                    <input
-                      type="text"
-                      value={localSettings.userProfile.company || ''}
-                      onChange={(e) => setLocalSettings(prev => ({
-                        ...prev,
-                        userProfile: { ...prev.userProfile, company: e.target.value }
-                      }))}
-                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    />
-                  </div>
+                  </div> 
                 </div>
 
-                <div className="bg-slate-700 p-4 rounded-lg">
+                <div className="bg-slate-700 p-4  rounded-lg">
                   <h4 className="text-white font-medium mb-2">Account Information</h4>
                   <div className="text-sm text-slate-300 space-y-1">
                     <div>Created: {new Date(localSettings.userProfile.createdAt).toLocaleDateString()}</div>
                     <div>Last Login: {new Date(localSettings.userProfile.lastLogin).toLocaleDateString()}</div>
+                     
                   </div>
                 </div>
+                <div className='text-sm font-medium text-slate-300'>Please note that you cannot update profile information on this desktop application</div>
               </div>
             )}
 
-            {activeTab === 'api' && (
+            {activeTab === 'access' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-white">API Configuration</h3>
+                <h3 className="text-lg font-semibold text-white">Access Key Configuration</h3>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Claude API Key</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Asseta Access Key</label>
                   <div className="relative">
                     <input
-                      type={showApiKey ? 'text' : 'password'}
-                      value={localSettings.apiKey}
-                      onChange={(e) => setLocalSettings(prev => ({ ...prev, apiKey: e.target.value }))}
-                      placeholder="sk-ant-..."
+                      type={showAccessKey ? 'text' : 'password'}
+                      value={localSettings.accessKey}
+                      onChange={(e) => setLocalSettings(prev => ({ ...prev, accessKey: e.target.value }))}
+                      placeholder="Enter your access key"
                       className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 pr-20"
                     />
                     <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
                       <button
-                        onClick={() => setShowApiKey(!showApiKey)}
+                        onClick={() => setShowAccessKey(!showAccessKey)}
                         className="p-1 text-slate-400 hover:text-white"
                       >
-                        {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showAccessKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                       <button
-                        onClick={handleApiKeyValidation}
-                        disabled={isValidatingApi}
+                        onClick={handleAccessKeyValidation}
+                        disabled={isValidatingKey}
                         className="px-2 py-1 bg-blue-600 text-white text-xs rounded disabled:opacity-50"
                       >
-                        {isValidatingApi ? 'Testing...' : 'Test'}
+                        {isValidatingKey ? 'Checking...' : 'Check'}
                       </button>
                     </div>
                   </div>
 
-                  {apiValidationResult && (
-                    <div className={`mt-2 flex items-center text-sm ${apiValidationResult.isValid ? 'text-green-400' : 'text-red-400'
+                  {keyValidationResult && (
+                    <div className={`mt-2 flex items-center text-sm ${keyValidationResult.isValid ? 'text-green-400' : 'text-red-400'
                       }`}>
-                      {apiValidationResult.isValid ? (
+                      {keyValidationResult.isValid ? (
                         <>
                           <Check className="w-4 h-4 mr-2" />
-                          API key is valid
+                          Access key is valid - {keyValidationResult.userData?.firstName} {keyValidationResult.userData?.lastName}
                         </>
                       ) : (
                         <>
                           <AlertCircle className="w-4 h-4 mr-2" />
-                          {apiValidationResult.error}
+                          {keyValidationResult.error}
                         </>
                       )}
                     </div>
@@ -297,11 +309,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="bg-slate-700 p-4 rounded-lg">
                   <h4 className="text-white font-medium mb-2">Connection Status</h4>
                   <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${localSettings.isApiKeyValid ? 'bg-green-400' : 'bg-red-400'}`} />
+                    <div className={`w-2 h-2 rounded-full ${localSettings.isAccessKeyValid ? 'bg-green-400' : 'bg-red-400'}`} />
                     <span className="text-sm text-slate-300">
-                      {localSettings.isApiKeyValid ? 'Connected to Claude API' : 'Not connected'}
+                      {localSettings.isAccessKeyValid ? 'Connected to Asseta.xyz' : 'Not connected'}
                     </span>
                   </div>
+                </div>
+
+                <div className="bg-slate-700 p-4 rounded-lg">
+                  <h4 className="text-white font-medium mb-2">Get Your Access Key</h4>
+                  <p className="text-slate-300 text-sm mb-4">
+                    Get your access key from the Asseta.xyz dashboard. Login to your account and find it in your profile section.
+                  </p>
+                  <button
+                    onClick={() => window.open('https://asseta.xyz', '_blank')}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                  >
+                    Go to Dashboard →
+                  </button>
                 </div>
               </div>
             )}
@@ -392,7 +417,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <h3 className="text-lg font-semibold text-white">General Settings</h3>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  {/* <div className="flex items-center justify-between">
                     <div>
                       <label className="text-white font-medium">Theme</label>
                       <p className="text-slate-400 text-sm">Choose your preferred theme</p>
@@ -400,12 +425,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <select
                       value={localSettings.theme}
                       onChange={(e) => setLocalSettings(prev => ({ ...prev, theme: e.target.value as 'dark' | 'light' }))}
-                      className="px-3 py-2   border border-slate-600 rounded-lg text-black focus:border-blue-500"
+                      className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-blue-500"
                     >
                       <option value="dark">Dark</option>
                       <option value="light">Light</option>
                     </select>
-                  </div>
+                  </div> */}
 
                   <div className="flex items-center justify-between">
                     <div>
