@@ -273,34 +273,9 @@ export class ClaudeService {
       ? `\n\nCurrent workspace: ${workspaceRoot}\nIMPORTANT: When users ask about files, directories, or code, they are referring to files in this workspace unless explicitly stated otherwise. Always use the workspace root as your base path for file operations.`
       : '\n\nNo workspace open. User needs to open a folder first to work with files.';
 
-    // Use agent-specific system prompt if available
-    if (this.currentAgent) {
-      const agentSystemPrompt = agentChatService.getAgentSystemPrompt(this.currentAgent.id);
-      return `${agentSystemPrompt}${folderInfo}`;
-    }
-
-    // Default system prompt when no agent is active
-    const availableTools = mcpService.getAvailableTools();
-    const toolsInfo = availableTools.length > 0
-      ? `\nAvailable MCP tools: ${availableTools.map(st => st.tools.map(t => t.name).join(', ')).join(', ')}`
-      : '';
-
-    return `You are Claude, an expert AI assistant specializing in Real World Asset (RWA) tokenization
-  
-  **Working with Project Files:**
-  ${folderInfo}
-  
-  When users share documents, always:
-  1. Read and analyze the content thoroughly
-  2. Identify key requirements, constraints, and opportunities
-  3. Suggest specific implementation approaches
-  4. Highlight potential legal/regulatory considerations
-  5. Recommend next steps and related files to create/review
-  
-  **Available Tools:**
-  ${toolsInfo}
-   
-  Remember: Every RWA project must balance innovation with regulatory compliance. Always consider both technical feasibility and legal requirements in your recommendations.`;
+    // Always get system prompt from agentChatService (handles both agent and general cases)
+    const systemPrompt = agentChatService.getAgentSystemPrompt(this.currentAgent?.id);
+    return `${systemPrompt}${folderInfo}`;
   }
 
   // Test connection method
@@ -337,18 +312,32 @@ export class ClaudeService {
     this.logger.info('claude', `Active agent set to: ${agent?.name || 'none'}`);
   }
 
-  // MCP Tool Integration - filtered by current agent
+  // MCP Tool Integration - filtered by current agent or general tools
   private getMCPTools(): any[] {
-    // If no agent is active, return no tools
-    if (!this.currentAgent) {
-      this.logger.info('claude', 'No active agent, returning no tools');
-      return [];
-    }
-
     const availableTools = mcpService.getAvailableTools();
-    const agentServerNames = this.currentAgent.mcpServers;
     const tools: any[] = [];
 
+    if (!this.currentAgent) {
+      // No agent active - return only filesystem tools for general use
+      this.logger.info('claude', 'No active agent, returning filesystem tools only');
+      
+      for (const serverTools of availableTools) {
+        if (serverTools.serverName === 'filesystem') {
+          for (const tool of serverTools.tools) {
+            const formattedTool = {
+              name: `${serverTools.serverName}_${tool.name}`,
+              description: `[${serverTools.serverName}] ${tool.description}`,
+              input_schema: tool.inputSchema
+            };
+            tools.push(formattedTool);
+          }
+        }
+      }
+      return tools;
+    }
+
+    // Agent is active - use agent's configured tools
+    const agentServerNames = this.currentAgent.mcpServers;
     console.log('Available MCP tools:', availableTools);
     console.log('Agent MCP servers:', agentServerNames);
 
@@ -387,12 +376,7 @@ export class ClaudeService {
 
     try {
       const result = await mcpService.callTool(serverName, actualToolName, input);
-      
-      // Record tool usage for agent metrics
-      if (this.currentAgent) {
-        agentChatService.recordToolUsage(this.currentAgent.id);
-      }
-
+       
       console.log('MCP tool result:', result);
 
       // Extract text content from the result
