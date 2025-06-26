@@ -1,12 +1,16 @@
 import { Agent, AgentTemplate, CreateAgentRequest } from '../types/agent';
 import { agentTemplates } from '../data/agentTemplates';
+import { mcpService } from "./mcpService"
 
 class AgentService {
   private agents: Map<string, Agent> = new Map();
-  private storage_key = 'build-your-dream-agents';
+  private storage_key = 'asetta-agents';
+  private statusCheckInterval: any
 
   constructor() {
     this.loadAgents();
+    // Start status checking interval
+    this.startStatusMonitoring();
   }
 
   // Load agents from localStorage
@@ -18,6 +22,16 @@ class AgentService {
         agentsData.forEach((agentData: any) => {
           const agent: Agent = {
             ...agentData,
+            mcpServers: agentData.mcpServers || (
+              agentData.mcpServerName ? ['filesystem', agentData.mcpServerName] : ['filesystem']
+            ),
+            isOnline: agentData.isOnline || false,
+            healthStatus: agentData.healthStatus || 'offline',
+            metrics: agentData.metrics || {
+              totalChats: 0,
+              toolsUsed: 0,
+              uptime: 0
+            },
             createdAt: new Date(agentData.createdAt),
             lastActive: agentData.lastActive ? new Date(agentData.lastActive) : undefined,
             messages: agentData.messages?.map((msg: any) => ({
@@ -61,33 +75,42 @@ class AgentService {
     }
 
     const agentId = `${template.id}-${Date.now()}`;
+
+    // Default MCP servers: always include filesystem + template servers + custom servers
+    let mcpServers = ['filesystem'];
+    if (template.mcpServerName) {
+      for (let mcp of template.mcpServerName) {
+        mcpServers.push(mcp);
+      }
+    }
+
     const agent: Agent = {
       id: agentId,
       name: request.customName || template.name,
-      role: template.role,
-      avatar: template.avatar,
-      status: 'offline',
       description: template.description,
-      color: template.color,
       systemPrompt: request.customSystemPrompt || template.systemPrompt,
-      mcpServerName: request.mcpServerConfig?.serverName || template.mcpServerName,
-      responseFolder: request.responseFolder || template.responseFolder,
+      mcpServers: mcpServers,
+      isOnline: false,
       messages: [],
-      templateId: template.id,
-      createdAt: new Date()
+      templateId: template.id
     };
 
+    console.log('Creating agent with servers:', mcpServers);
     this.agents.set(agentId, agent);
     this.saveAgents();
+
+    // Update agent status immediately after creation
+    setTimeout(() => {
+      console.log('Updating agent status after creation...');
+      this.updateAgentOnlineStatus(agentId);
+    }, 500);
 
     return agent;
   }
 
   // Get all agents
   getAgents(): Agent[] {
-    return Array.from(this.agents.values()).sort((a, b) => 
-      b.createdAt.getTime() - a.createdAt.getTime()
-    );
+    return Array.from(this.agents.values())
   }
 
   // Get agent by ID
@@ -130,8 +153,7 @@ class AgentService {
     };
 
     agent.messages.push(message);
-    agent.lastActive = new Date();
-    
+
     this.agents.set(agentId, agent);
     this.saveAgents();
   }
@@ -142,22 +164,9 @@ class AgentService {
     return agent?.messages || [];
   }
 
-  // Update agent status
-  updateStatus(agentId: string, status: 'online' | 'away' | 'busy' | 'offline'): void {
-    const agent = this.agents.get(agentId);
-    if (agent) {
-      agent.status = status;
-      if (status === 'online') {
-        agent.lastActive = new Date();
-      }
-      this.agents.set(agentId, agent);
-      this.saveAgents();
-    }
-  }
-
   // Get agents by status
-  getAgentsByStatus(status: 'online' | 'away' | 'busy' | 'offline'): Agent[] {
-    return this.getAgents().filter(agent => agent.status === status);
+  getAgentsByStatus(status: 'online' | 'offline'): Agent[] {
+    return status === "online" ? this.getAgents().filter(agent => agent.isOnline) : this.getAgents().filter(agent => !agent.isOnline)
   }
 
   // Clear all agents (for development/testing)
@@ -166,10 +175,106 @@ class AgentService {
     localStorage.removeItem(this.storage_key);
   }
 
-  // Get active folder path for agent responses
-  getResponsePath(agent: Agent, activeFolder: string | null): string | null {
-    if (!activeFolder || !agent.responseFolder) return null;
-    return `${activeFolder}/${agent.responseFolder}`;
+  // Get agent's connected MCP servers
+  getAgentMCPServers(agentId: string): string[] {
+    const agent = this.agents.get(agentId);
+    return agent?.mcpServers || [];
+  }
+
+  // Get tools context for agent's system prompt
+  getAgentToolsContext(agentId: string): string {
+    const agent = this.agents.get(agentId);
+    if (!agent) return '';
+
+    return agent.toolsContext || '';
+  }
+
+  // Update agent's tools context
+  updateAgentToolsContext(agentId: string, toolsContext: string): void {
+    const agent = this.agents.get(agentId);
+    if (agent) {
+      agent.toolsContext = toolsContext;
+      this.saveAgents();
+    }
+  }
+
+  // Check if agent is online (all connected MCP servers running)
+  isAgentOnline(agentId: string): boolean {
+    const agent = this.agents.get(agentId);
+    return agent?.isOnline || false;
+  }
+
+  // Update agent online status based on MCP servers
+  updateAgentOnlineStatus(agentId: string): void {
+    const agent = this.agents.get(agentId);
+    if (!agent) {
+      console.warn(`Agent ${agentId} not found for status update`);
+      return;
+    }
+
+    try {
+      // Get current server statuses
+      const allServers = mcpService.getServers();
+      const serverStatusMap = new Map(allServers.map(s => [s.config.name, s.status]));
+
+      console.log(`=== Agent: ${agent.name} ===`);
+      console.log('Required servers:', agent.mcpServers);
+
+      // Check each required server
+      const serverStatuses = agent.mcpServers.map(serverName => {
+        const status = serverStatusMap.get(serverName) || 'not-found';
+        console.log(`  ${serverName}: ${status}`);
+        return { name: serverName, status, isRunning: status === 'running' };
+      });
+
+      // Count running servers
+      const runningCount = serverStatuses.filter(s => s.isRunning).length;
+      const totalCount = serverStatuses.length;
+
+      // Update agent status
+      agent.isOnline = totalCount > 0 && runningCount === totalCount;
+
+      console.log(`Result: ${runningCount}/${totalCount} servers running -> ${agent.isOnline ? 'ONLINE' : 'OFFLINE'}`);
+
+    } catch (error) {
+      console.error('Failed to update agent status:', error);
+      agent.isOnline = false;
+    }
+
+    // Save changes
+    this.saveAgents();
+  }
+
+  // Update all agents' online status
+  updateAllAgentsOnlineStatus(): void {
+    this.agents.forEach((_, agentId) => {
+      this.updateAgentOnlineStatus(agentId);
+    });
+  }
+
+  // Start monitoring agent status with interval
+  private startStatusMonitoring(): void {
+    // Initial check after a short delay
+    setTimeout(() => this.updateAllAgentsOnlineStatus(), 1000);
+
+    // Set up interval to check every 5 seconds
+    this.statusCheckInterval = setInterval(() => {
+      this.updateAllAgentsOnlineStatus();
+    }, 5000);
+  }
+
+  // Stop monitoring (cleanup)
+  stopStatusMonitoring(): void {
+    if (this.statusCheckInterval) {
+      clearInterval(this.statusCheckInterval);
+      this.statusCheckInterval = null;
+    }
+  }
+
+  // Force refresh all agent statuses
+  refreshAllAgentStatus(): void {
+    console.log('Manually refreshing all agent statuses...');
+    this.updateAllAgentsOnlineStatus();
   }
 }
 

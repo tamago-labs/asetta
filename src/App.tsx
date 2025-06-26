@@ -306,7 +306,6 @@ function App() {
         isOpen={showAddAgent}
         onClose={() => setShowAddAgent(false)}
         onAgentCreated={handleAgentCreated}
-        activeFolder={projectPath}
       />
 
     </div>

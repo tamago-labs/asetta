@@ -1,17 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  X, 
-  Plus, 
-  Bot, 
-  Code, 
-  Cloud, 
-  Monitor, 
-  Scale, 
-  Target,
+import {
+  X,
+  Plus,
   ChevronRight,
   AlertCircle,
   CheckCircle,
-  Settings
+  Settings,
+  Server
 } from 'lucide-react';
 import { AgentTemplate, CreateAgentRequest } from '../types/agent';
 import { agentService } from '../services/agentService';
@@ -20,48 +15,37 @@ interface AddAgentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAgentCreated: (agentId: string) => void;
-  activeFolder: string | null;
 }
-
-const categoryIcons = {
-  'smart-contract': Code,
-  'infrastructure': Cloud,
-  'fullstack': Monitor,
-  'legal': Scale,
-  'project-management': Target,
-  'custom': Bot
-};
-
-const categoryColors = {
-  'smart-contract': 'text-purple-400 bg-purple-500/20',
-  'infrastructure': 'text-orange-400 bg-orange-500/20',
-  'fullstack': 'text-green-400 bg-green-500/20',
-  'legal': 'text-red-400 bg-red-500/20',
-  'project-management': 'text-blue-400 bg-blue-500/20',
-  'custom': 'text-gray-400 bg-gray-500/20'
-};
 
 export const AddAgentModal: React.FC<AddAgentModalProps> = ({
   isOpen,
   onClose,
-  onAgentCreated,
-  activeFolder
+  onAgentCreated
 }) => {
   const [step, setStep] = useState<'template' | 'configure'>('template');
   const [selectedTemplate, setSelectedTemplate] = useState<AgentTemplate | null>(null);
   const [customName, setCustomName] = useState('');
   const [customSystemPrompt, setCustomSystemPrompt] = useState('');
-  const [responseFolder, setResponseFolder] = useState('');
+  const [selectedMCPServers, setSelectedMCPServers] = useState<string[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const templates = agentService.getAgentTemplates();
+  // const availableServers = mcpService.getServers();
 
   React.useEffect(() => {
     if (selectedTemplate) {
       setCustomName(selectedTemplate.name);
       setCustomSystemPrompt(selectedTemplate.systemPrompt);
-      setResponseFolder(selectedTemplate.responseFolder || '');
+
+      // Set default MCP servers for the template
+      const defaultServers = ['filesystem']; // Always include filesystem
+      if (selectedTemplate.mcpServerName) {
+        for (let mcp of selectedTemplate.mcpServerName) {
+          defaultServers.push(mcp);
+        }
+      }
+      setSelectedMCPServers(defaultServers);
     }
   }, [selectedTemplate]);
 
@@ -81,7 +65,7 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
         templateId: selectedTemplate.id,
         customName: customName.trim() || selectedTemplate.name,
         customSystemPrompt: customSystemPrompt.trim() || selectedTemplate.systemPrompt,
-        responseFolder: responseFolder.trim() || selectedTemplate.responseFolder
+        mcpServers: selectedMCPServers
       };
 
       const agent = agentService.createAgent(request);
@@ -99,7 +83,7 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
     setSelectedTemplate(null);
     setCustomName('');
     setCustomSystemPrompt('');
-    setResponseFolder('');
+    setSelectedMCPServers([]);
     setError(null);
     onClose();
   };
@@ -111,9 +95,6 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
       <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Plus className="w-5 h-5 text-white" />
-            </div>
             <div>
               <h2 className="text-xl font-semibold text-white">Add New Agent</h2>
               <p className="text-slate-400 text-sm">
@@ -133,16 +114,13 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
 
         {step === 'template' && (
           <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h3 className="text-lg font-medium text-white mb-2">Choose Your Agent Type</h3>
-              <p className="text-slate-400">Select a specialized agent template for your Web3 RWA project</p>
-            </div>
+            {/* <div className="text-center mb-6">
+              <h3 className="text-lg font-medium text-white mb-2">Choose Your Agent Template</h3> 
+            </div> */}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {templates.map((template) => {
-                const IconComponent = categoryIcons[template.category];
-                const colorClass = categoryColors[template.category];
-                
+              {templates.map((template: AgentTemplate) => {
+
                 return (
                   <button
                     key={template.id}
@@ -151,56 +129,29 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colorClass}`}>
-                          <IconComponent className="w-6 h-6" />
-                        </div>
                         <div>
                           <h3 className="font-semibold text-white group-hover:text-blue-300 transition-colors text-lg">
                             {template.name}
                           </h3>
-                          <p className="text-slate-400 text-sm">{template.role}</p>
                         </div>
                       </div>
                       <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 transition-colors" />
                     </div>
-                    
+
                     <p className="text-slate-300 text-sm mb-4 leading-relaxed">
                       {template.description}
                     </p>
-                    
+
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="px-3 py-1 bg-slate-700 text-slate-300 rounded-full capitalize">
-                        {template.category.replace('-', ' ')}
-                      </span>
                       {template.mcpServerName && (
                         <span className="px-3 py-1 bg-purple-600/20 text-purple-300 rounded-full">
-                          {template.mcpServerName}
+                          {template.mcpServerName.map(item => `${item}, `)}filesystem
                         </span>
-                      )}
-                      {template.responseFolder && (
-                        <span className="px-3 py-1 bg-green-600/20 text-green-300 rounded-full">
-                          {template.responseFolder}/
-                        </span>
-                      )}
+                      )} 
                     </div>
                   </button>
                 );
               })}
-            </div>
-
-            <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <Settings className="w-5 h-5 text-purple-400 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-purple-300 mb-1">Need MCP Server Tools?</h4>
-                  <p className="text-purple-200 text-sm mb-3">
-                    Some agents work best with MCP servers for specialized capabilities. Use the global MCP button (top-right) to manage servers.
-                  </p>
-                  <p className="text-purple-400 text-sm font-medium">
-                    MCP button is available in the top toolbar →
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         )}
@@ -208,23 +159,19 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
         {step === 'configure' && selectedTemplate && (
           <div className="space-y-6">
             {/* Template Summary */}
-            <div className="bg-slate-700/50 rounded-lg p-4">
+            {/* <div className="bg-slate-700/50 rounded-lg p-4">
               <div className="flex items-center gap-3 mb-2">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${categoryColors[selectedTemplate.category]}`}>
-                  {React.createElement(categoryIcons[selectedTemplate.category], { className: "w-5 h-5" })}
-                </div>
                 <div>
                   <h3 className="font-medium text-white">{selectedTemplate.name}</h3>
-                  <p className="text-slate-400 text-sm">{selectedTemplate.role}</p>
                 </div>
               </div>
               <p className="text-slate-300 text-sm">{selectedTemplate.description}</p>
-            </div>
+            </div> */}
 
             {/* Configuration Form */}
             <div className="space-y-4">
-              <h4 className="font-medium text-white mb-3">Agent Configuration</h4>
-              
+              {/* <h4 className="font-medium text-white mb-3">Agent Configuration</h4> */}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -238,29 +185,10 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
                     placeholder="Enter custom name or leave default"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Response Folder
-                    {activeFolder && (
-                      <span className="text-slate-400 text-xs ml-2">
-                        Will save to: {activeFolder}/{responseFolder || selectedTemplate.responseFolder}
-                      </span>
-                    )}
-                  </label>
-                  <input
-                    type="text"
-                    value={responseFolder}
-                    onChange={(e) => setResponseFolder(e.target.value)}
-                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    placeholder={selectedTemplate.responseFolder || "Enter folder name"}
-                  />
-                  <p className="text-slate-400 text-xs mt-1">
-                    Folder where this agent will save its generated files (relative to active project folder)
-                  </p>
-                </div>
               </div>
             </div>
+
+            
 
             {/* System Prompt */}
             <div>
@@ -280,18 +208,51 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
               </p>
             </div>
 
+            {/* MCP Server Selection */}
+            <div className="bg-slate-700/30 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Server className="w-5 h-5 text-blue-400" />
+                  <h4 className="font-medium text-white">MCP Server Connections</h4>
+                </div>
+              </div>
+
+              <div className="text-slate-400 text-sm mb-3">
+                Select which MCP servers this agent can use for tools and capabilities.
+              </div>
+
+              {/* Selected servers preview */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {selectedMCPServers.map(serverName => {
+                  return (
+                    <div
+                      key={serverName}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-slate-600 rounded-lg text-sm"
+                    >
+                      <span className={'text-white'}>
+                        {serverName}
+                      </span>
+                      {serverName === 'filesystem' && (
+                        <span className="text-slate-400 text-xs">(default)</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* MCP Server Info */}
-            {selectedTemplate.mcpServerName && (
+            {(selectedTemplate.mcpServerName || selectedMCPServers.length > 1) && (
               <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
                 <div className="flex items-start gap-3">
                   <Settings className="w-5 h-5 text-purple-400 mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-purple-300 mb-1">MCP Server Integration</h4>
+                    <h4 className="font-medium text-purple-300 mb-1">Agent Capabilities</h4>
                     <p className="text-purple-200 text-sm mb-2">
-                      This agent can connect to <strong>{selectedTemplate.mcpServerName}</strong> for specialized tools.
+                      This agent will have access to tools from: {selectedMCPServers.join(', ')}
                     </p>
-                    <p className="text-purple-400 text-sm font-medium">
-                      Use the MCP button (top-right) to configure servers →
+                    <p className="text-yellow-300 text-sm font-medium">
+                      ⚠️ Some servers may not running by default. Start them via MCP Manager.
                     </p>
                   </div>
                 </div>
@@ -315,7 +276,7 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
               >
                 ← Back to Templates
               </button>
-              
+
               <div className="flex gap-3">
                 <button
                   onClick={handleClose}
@@ -335,8 +296,7 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
                       Creating...
                     </>
                   ) : (
-                    <>
-                      <CheckCircle className="w-4 h-4" />
+                    <> 
                       Create Agent
                     </>
                   )}

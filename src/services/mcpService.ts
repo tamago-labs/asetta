@@ -145,7 +145,7 @@ export class MCPService {
       this.logger.info('mcp', `MCP server ${serverName} started successfully`);
       this.emit('serverStatusChanged', { serverName, status: 'running' });
       this.emit('serverStarted', { serverName, tools: server.tools, resources: server.resources });
-
+      
       return true;
     } catch (error: any) {
       this.logger.error('mcp', `Failed to start MCP server ${serverName}`, { error: error.message });
@@ -172,7 +172,7 @@ export class MCPService {
 
       this.emit('serverStatusChanged', { serverName, status: 'stopped' });
       this.emit('serverStopped', { serverName });
-
+   
       return true;
     } catch (error: any) {
       this.logger.error('mcp', `Failed to stop MCP server ${serverName}`, { error: error.message });
@@ -342,7 +342,22 @@ export class MCPService {
   }
 
   getServerTemplates(): MCPServerConfig[] {
-    return [
+    return [ 
+      // Asetta Core MCP
+      {
+        name: 'asetta-mcp-legal',
+        command: 'npx',
+        args: ['-y', '@tamago-labs/asetta-mcp', '--access_key=YOUR_ACCESS_KEY', '--agent_mode=legal'],
+        description: 'MCP for legal agent for Asetta.xyz platform',
+        category: 'core'
+      },
+      {
+        name: 'asetta-mcp-tokenization',
+        command: 'npx',
+        args: ['-y', '@tamago-labs/asetta-mcp', '--access_key=YOUR_ACCESS_KEY', '--agent_mode=tokenization'],
+        description: 'MCP for tokenization agent for Asetta.xyz platform',
+        category: 'core'
+      },
       // AWS Development Tools
       {
         name: 'frontend-mcp',
@@ -354,28 +369,6 @@ export class MCPService {
         description: 'React and modern web development guidance with AWS integration',
         category: 'development'
       },
-      {
-        name: 'aws-diagram-mcp',
-        command: 'uvx',
-        args: ['awslabs.aws-diagram-mcp-server@latest'],
-        env: {
-          AWS_PROFILE: 'YOUR_AWS_PROFILE',
-          AWS_REGION: 'us-east-1',
-          FASTMCP_LOG_LEVEL: 'ERROR'
-        },
-        description: 'Generate architecture diagrams and technical illustrations',
-        category: 'development'
-      },
-      // {
-      //   name: 'code-documentation-gen',
-      //   command: 'uvx',
-      //   args: ['awslabs.code-doc-gen-mcp-server@latest'],
-      //   env: {
-      //     FASTMCP_LOG_LEVEL: 'ERROR'
-      //   },
-      //   description: 'Auto-generate documentation from your codebase analysis',
-      //   category: 'development'
-      // },
       // AWS Conversational Assistants
       {
         name: 'aws-documentation-mcp',
@@ -410,18 +403,7 @@ export class MCPService {
         },
         description: 'Query enterprise knowledge bases with citation support using Amazon Bedrock',
         category: 'conversational'
-      },
-      
-      
-      
-      // Legacy Web3 Servers (for backward compatibility)
-      {
-        name: 'story-protocol-mcp',
-        command: 'npx',
-        args: ['-y', '@tamago-labs/story-protocol-mcp', '--private_key=YOUR_PRIVATE_KEY'],
-        description: 'Story Protocol MCP for IP asset management and licensing',
-        category: 'web3'
-      },
+      }, 
       {
         name: 'web-search',
         command: 'npx',
@@ -440,6 +422,7 @@ export class MCPService {
     this.servers.clear();
     this.eventListeners.clear();
   }
+
 }
 
 // Create singleton instance

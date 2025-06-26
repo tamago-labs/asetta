@@ -149,7 +149,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
               <Building2 className="w-12 h-12 text-white" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-white mb-6">Asseta Creator</h2>
+              <h2 className="text-3xl font-bold text-white mb-6">Welcome</h2>
               <p className="text-slate-300 text-lg leading-relaxed max-w-2xl mx-auto">
                 Transform your valuable assets into digital tokens with the power of AI.
                 Real estate, commodities, art collections - all tokenized in minutes, not months.
@@ -179,7 +179,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
               <Key className="w-16 h-16 text-blue-400 mx-auto mb-6" />
               <h2 className="text-3xl font-bold text-white mb-3">Connect Your Account</h2>
               <p className="text-slate-300 text-lg">
-                Enter your access key from the Asseta.xyz dashboard
+                Enter your access key from the Asetta.xyz dashboard
               </p>
             </div>
 
@@ -223,10 +223,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
               <div className="bg-slate-800 p-6 rounded-xl">
                 <h4 className="text-white font-medium mb-3">Don't have an access key?</h4>
                 <p className="text-slate-300 text-sm mb-4">
-                  Get your access key from the Asseta.xyz dashboard. Login to your account and find it in your profile section.
+                  Get your access key from the Asetta.xyz dashboard. Login to your account and find it in your profile section.
                 </p>
                 <button
-                  onClick={() => window.open('https://asseta.xyz', '_blank')}
+                  onClick={() => window.open('https://asetta.xyz', '_blank')}
                   className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
                 >
                   Go to Dashboard →

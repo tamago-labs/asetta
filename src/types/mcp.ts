@@ -4,7 +4,7 @@ export interface MCPServerConfig {
   args: string[];
   env?: Record<string, string>;
   description: string;
-  category: 'filesystem' | 'database' | 'search' | 'git' | 'web3' | 'custom' | 'conversational' | 'development';
+  category: 'core' | 'filesystem' | 'database' | 'search' | 'git' | 'web3' | 'custom' | 'conversational' | 'development';
 }
 
 export interface MCPServerInstance {

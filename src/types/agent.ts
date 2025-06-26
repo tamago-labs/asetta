@@ -1,36 +1,23 @@
+
+
 export interface AgentTemplate {
   id: string;
   name: string;
-  role: string;
-  avatar: string;
   description: string;
-  category: 'smart-contract' | 'infrastructure' | 'fullstack' | 'legal' | 'project-management' | 'custom';
   systemPrompt: string;
-  mcpServerName?: string;
-  mcpServerConfig?: {
-    command: string;
-    args: string[];
-    env?: Record<string, string>;
-  };
-  responseFolder?: string; // relative to active folder
-  color: string;
+  mcpServerName?: string[];
 }
 
 export interface Agent {
   id: string;
-  name: string;
-  role: string;
-  avatar: string;
-  status: 'online' | 'away' | 'busy' | 'offline';
-  description: string;
-  color: string;
+  name: string; 
+  description: string; 
   systemPrompt: string;
-  mcpServerName?: string;
-  responseFolder?: string;
+  mcpServers: string[];           // Connected MCP servers
+  isOnline: boolean;              // Computed from MCP status
+  toolsContext?: string;          // Auto-generated tools description
   messages: AgentMessage[];
   templateId?: string;
-  createdAt: Date;
-  lastActive?: Date;
 }
 
 export interface AgentMessage {
@@ -51,10 +38,5 @@ export interface CreateAgentRequest {
   templateId: string;
   customName?: string;
   customSystemPrompt?: string;
-  mcpServerConfig?: {
-    serverName: string;
-    args?: string[];
-    env?: Record<string, string>;
-  };
-  responseFolder?: string;
+  mcpServers?: string[];          // Selected MCP servers
 }

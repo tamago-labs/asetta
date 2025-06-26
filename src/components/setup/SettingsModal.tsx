@@ -112,7 +112,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'asseta-settings.json';
+    a.download = 'asetta-settings.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -262,7 +262,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <h3 className="text-lg font-semibold text-white">Access Key Configuration</h3>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Asseta Access Key</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Asetta Access Key</label>
                   <div className="relative">
                     <input
                       type={showAccessKey ? 'text' : 'password'}
@@ -321,7 +321,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         localSettings.isAccessKeyValid ? 'bg-green-400' : 'bg-red-400'
                       }`} />
                       <span className="text-sm text-slate-300">
-                        {localSettings.isAccessKeyValid ? 'Connected to Asseta.xyz' : 'Not connected'}
+                        {localSettings.isAccessKeyValid ? 'Connected to Asetta.xyz' : 'Not connected'}
                       </span>
                     </div>
                   </div>
@@ -330,10 +330,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="bg-slate-700 p-4 rounded-lg">
                   <h4 className="text-white font-medium mb-2">Get Your Access Key</h4>
                   <p className="text-slate-300 text-sm mb-4">
-                    Get your access key from the Asseta.xyz dashboard. Login to your account and find it in your profile section.
+                    Get your access key from the Asetta.xyz dashboard. Login to your account and find it in your profile section.
                   </p>
                   <button
-                    onClick={() => window.open('https://asseta.xyz', '_blank')}
+                    onClick={() => window.open('https://asetta.xyz', '_blank')}
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                   >
                     Go to Dashboard →
