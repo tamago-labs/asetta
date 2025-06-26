@@ -164,7 +164,7 @@ function App() {
       <div className="h-screen w-screen flex items-center justify-center bg-slate-900">
         <div className="text-center flex flex-col">
           <div className="w-16 mx-auto h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <h2 className="text-white mx-auto text-xl font-semibold mb-2">Asseta</h2>
+          <h2 className="text-white mx-auto text-xl font-semibold mb-2">Asetta</h2>
           <p className="text-slate-400 mx-auto">Starting up your workspace...</p>
         </div>
       </div>

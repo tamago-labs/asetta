@@ -1,18 +1,18 @@
-# Asseta.xyz - Web3 RWA MCP Desktop Application
+# Asetta.xyz - Web3 RWA MCP Desktop Application
 
 > **Multi-Agent Orchestration for Web3 Real World Assets using AWS and Chainlink**
 
-Asseta.xyz is a Tauri desktop application that leverages Model Context Protocol (MCP) to enable multi-agent orchestration for building Web3 Real World Asset (RWA) projects. The platform integrates AWS cloud services and Chainlink oracles to create comprehensive blockchain solutions for asset tokenization, featuring specialized MCP servers for different blockchain ecosystems including Story Protocol for IP assets.
+Asetta.xyz is a Tauri desktop application that leverages Model Context Protocol (MCP) to enable multi-agent orchestration for building Web3 Real World Asset (RWA) projects. The platform integrates AWS cloud services and Chainlink oracles to create comprehensive blockchain solutions for asset tokenization, featuring specialized MCP servers for different blockchain ecosystems including Story Protocol for IP assets.
 
-![Asseta.xyz](https://img.shields.io/badge/Platform-Desktop-blue)
+![Asetta.xyz](https://img.shields.io/badge/Platform-Desktop-blue)
 ![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?logo=typescript)
 ![Tauri](https://img.shields.io/badge/Tauri-2+-24C8DB?logo=tauri)
 ![MCP](https://img.shields.io/badge/MCP-Protocol-purple)
 
-## 🚀 **What is Asseta.xyz?**
+## 🚀 **What is Asetta.xyz?**
 
-Asseta.xyz is a revolutionary desktop application that uses Model Context Protocol (MCP) to orchestrate multiple AI agents for Web3 Real World Asset development. The platform provides a unified interface to manage blockchain projects that integrate:
+Asetta.xyz is a revolutionary desktop application that uses Model Context Protocol (MCP) to orchestrate multiple AI agents for Web3 Real World Asset development. The platform provides a unified interface to manage blockchain projects that integrate:
 
 - **🔗 Multiple Blockchain Networks**: Aptos, Sui, XRPL, Story Protocol
 - **☁️ AWS Cloud Services**: Infrastructure automation and deployment
