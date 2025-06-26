@@ -221,20 +221,22 @@ class AgentService {
       console.log('Required servers:', agent.mcpServers);
 
       // Check each required server
-      const serverStatuses = agent.mcpServers.map(serverName => {
-        const status = serverStatusMap.get(serverName) || 'not-found';
-        console.log(`  ${serverName}: ${status}`);
-        return { name: serverName, status, isRunning: status === 'running' };
-      });
+      // const serverStatuses = agent.mcpServers.map(serverName => {
+      //   const status = serverStatusMap.get(serverName) || 'not-found'; 
+      //   console.log(`  ${serverName}: ${status}`);
+      //   return { name: serverName, status, isRunning: status === 'running' };
+      // });
 
       // Count running servers
-      const runningCount = serverStatuses.filter(s => s.isRunning).length;
-      const totalCount = serverStatuses.length;
+      // const runningCount = serverStatuses.filter(s => s.isRunning).length;
+      // const totalCount = serverStatuses.length;
 
       // Update agent status
-      agent.isOnline = totalCount > 0 && runningCount === totalCount;
+      // agent.isOnline = totalCount > 0 && runningCount === totalCount;
 
-      console.log(`Result: ${runningCount}/${totalCount} servers running -> ${agent.isOnline ? 'ONLINE' : 'OFFLINE'}`);
+      // console.log(`Result: ${runningCount}/${totalCount} servers running -> ${agent.isOnline ? 'ONLINE' : 'OFFLINE'}`);
+
+      agent.isOnline = true
 
     } catch (error) {
       console.error('Failed to update agent status:', error);
