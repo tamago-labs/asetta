@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::Mutex;
+// use std::sync::Arc;
+// use tokio::sync::Mutex;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, Command, ChildStdin, ChildStdout};
 use serde_json::{json, Value};
@@ -15,9 +15,9 @@ pub struct MCPClient {
 }
 
 impl MCPClient {
-    pub async fn new(command: String, args: Vec<String>) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
-        Self::new_with_env(command, args, HashMap::new()).await
-    }
+    // pub async fn new(command: String, args: Vec<String>) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+    //     Self::new_with_env(command, args, HashMap::new()).await
+    // }
 
     pub async fn new_with_env(
         command: String, 
@@ -69,7 +69,7 @@ impl MCPClient {
                     "tools": {}
                 },
                 "clientInfo": {
-                    "name": "build-your-dream",
+                    "name": "asetta",
                     "version": "0.1.0"
                 }
             }

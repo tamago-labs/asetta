@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    build_your_dream_app_lib::run()
+    asetta_app_lib::run()
 }
