@@ -188,7 +188,7 @@ function App() {
             onAgentCreated={handleAgentCreated}
             onAgentRemoved={handleAgentRemoved}
             activeFolder={projectPath}
-            setShowAddAgent={setShowAddAgent}
+            onAddAgent={() => setShowAddAgent(true)}
           />
         </div>
 

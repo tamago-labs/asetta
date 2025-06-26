@@ -11,7 +11,7 @@ interface SidebarProps {
   onAgentCreated?: (agentId: string) => void;
   onAgentRemoved?: (agentId: string) => void;
   activeFolder?: string | null;
-  setShowAddAgent?: (flag: boolean) => void
+  onAddAgent?: () => void
 }
 
 // const statusColors = {
@@ -28,7 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onAgentCreated,
   onAgentRemoved,
   activeFolder,
-  setShowAddAgent
+  onAddAgent
 }) => {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -190,17 +190,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button> */}
           <button
-            onClick={setShowAddAgent}
+            onClick={onAddAgent}
             className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors disabled:opacity-50"
             title="Add new agent"
           >
-            <PlusSquare className={`w-5 h-5`} />
+            <Plus className={`w-5 h-5`} />
           </button>
         </div>
       </div>
 
       {/* General Channel */}
-      <div className="p-3 border-b border-slate-700 flex-shrink-0">
+      {/* <div className="p-3 border-b border-slate-700 flex-shrink-0">
         <button
           onClick={() => onAgentSelect('')}
           className={clsx(
@@ -226,7 +226,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
         </button>
-      </div>
+      </div> */}
 
       {/* Agents List */}
       <div className="flex-1 overflow-y-auto py-3">
