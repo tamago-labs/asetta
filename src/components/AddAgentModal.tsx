@@ -242,7 +242,7 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
             </div>
 
             {/* MCP Server Info */}
-            {(selectedTemplate.mcpServerName || selectedMCPServers.length > 1) && (
+            {/* {(selectedTemplate.mcpServerName || selectedMCPServers.length > 1) && (
               <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
                 <div className="flex items-start gap-3">
                   <Settings className="w-5 h-5 text-purple-400 mt-0.5" />
@@ -257,7 +257,7 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* Error Display */}
             {error && (

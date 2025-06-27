@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { ChatArea } from './components/ChatArea'; 
 import { FileManager } from './components/FileManager';
@@ -154,6 +154,20 @@ function App() {
     setSelectedFile(null);
   };
 
+  // Auto-start required servers when agent is selected
+  const handleAgentSelectWithServerStart = async (agentId: string) => {
+    setSelectedAgentId(selectedAgentId === agentId ? null : agentId);
+    
+    if (selectedAgentId !== agentId && agentId) {
+      // Try to auto-start required servers for this agent
+      try {
+        await agentService.startRequiredServers(agentId);
+      } catch (error) {
+        console.error('Failed to auto-start servers for agent:', error);
+      }
+    }
+  };
+
   // Use real agents if available, otherwise show empty state
   const currentAgents = legacyMode && realAgents.length === 0 ? [] : realAgents;
   const currentMessages: any[] = []; // For now, messages are handled locally in ChatArea
@@ -184,7 +198,7 @@ function App() {
           <Sidebar
             agents={currentAgents}
             selectedAgentId={selectedAgentId}
-            onAgentSelect={handleAgentSelect}
+            onAgentSelect={handleAgentSelectWithServerStart}
             onAgentCreated={handleAgentCreated}
             onAgentRemoved={handleAgentRemoved}
             activeFolder={projectPath}
@@ -205,6 +219,8 @@ function App() {
               agents={currentAgents}
               selectedAgentId={selectedAgentId}
               onAddAgent={() => setShowAddAgent(true)}
+              onAgentSelect={handleAgentSelectWithServerStart}
+              setSelectedAgentId={setSelectedAgentId}
             />
           )}
         </div>
@@ -220,23 +236,6 @@ function App() {
         </div>
       </div>
 
-      {/* Overlay UI Elements */}
-      {/* <div className="absolute top-4 right-4 z-30">
-        <div className="flex items-center gap-2"> 
-          <button
-            onClick={() => setShowMCPManager(true)}
-            className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
-            title="Manage MCP Servers"
-          >
-            <Server className="w-4 h-4" />
-          </button> 
-          <ConnectionStatus
-            isConnected={settings.isApiKeyValid}
-            onSettingsClick={() => setShowSettings(true)}
-          />
-        </div>
-      </div> */}
-
       <div className="absolute bottom-4 left-4 z-30 flex gap-2">
         <button
           onClick={handleStartOnboarding}
@@ -247,13 +246,13 @@ function App() {
         </button>
 
         {/* Add Agent Button */}
-        <button
+        {/* <button
           onClick={() => setShowAddAgent(true)}
           className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
           title="Add New Agent"
         >
           <Plus className="w-5 h-5" />
-        </button>
+        </button> */}
 
         {/* MCP Manager Button */}
         <button
@@ -272,9 +271,6 @@ function App() {
         >
           <Settings className="w-5 h-5" />
         </button>
-
-
-
       </div>
 
       {/* Modals */}

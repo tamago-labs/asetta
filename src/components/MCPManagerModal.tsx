@@ -435,6 +435,76 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
                   <p className="text-slate-400 text-sm">Available MCP server templates. Click to add to your servers.</p>
                 </div>
 
+                 {/* Core Servers */}
+                 {serverTemplates.filter(template => !['conversational', 'development'].includes(template.category)).length > 0 && (
+                  <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                      <h4 className="text-md font-medium text-white">Core MCP Servers</h4>
+                      <span className="text-xs bg-gray-900/50 text-gray-300 px-2 py-1 rounded">Asetta.xyz</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {serverTemplates.filter(template => !['conversational', 'development'].includes(template.category)).map((template) => (
+                        <div
+                          key={template.name}
+                          className="border border-slate-700 rounded-lg p-4 bg-slate-800/50 hover:bg-slate-800/70 transition-colors"
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className={`flex items-center gap-2 ${getCategoryColor(template.category)}`}>
+                                {getCategoryIcon(template.category)}
+                              </div>
+                              <div>
+                                <span className="font-medium text-white text-sm">
+                                  {template.name}
+                                </span>
+                                <div className="text-xs text-slate-400 capitalize">
+                                  {template.category}
+                                </div>
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={() => {
+                                setSelectedTemplate(template.name);
+                                setCustomArgs(template.args.join(' '));
+                                setCustomEnv(template.env || {});
+                                setShowAddServer(true);
+                              }}
+                              className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-xs font-medium"
+                            >
+                              Add Server
+                            </button>
+                          </div>
+
+                          <div className="text-xs text-slate-300 mb-3">
+                            {template.description}
+                          </div>
+
+                          <div className="bg-slate-900/50 rounded p-2">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Terminal className="w-3 h-3 text-slate-400" />
+                              <span className="text-xs text-slate-400">Command</span>
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(`${template.command} ${template.args.join(' ')}`);
+                                }}
+                                className="ml-auto p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"
+                                title="Copy command"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </button>
+                            </div>
+                            <div className="font-mono text-xs text-green-300 break-all">
+                              {template.command} {template.args.join(' ')}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* AWS Development Tools */}
                 <div className="mb-8">
                   <div className="flex items-center gap-2 mb-4">
@@ -443,7 +513,7 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
                     <span className="text-xs bg-blue-900/50 text-blue-300 px-2 py-1 rounded">Code Generation & Documentation</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    {serverTemplates.filter(template => template.category === 'development').map((template) => (
+                    {serverTemplates.filter(template => template.category === 'development' ||  template.category === 'conversational').map((template) => (
                       <div
                         key={template.name}
                         className="border border-slate-700 rounded-lg p-4 bg-slate-800/50 hover:bg-slate-800/70 transition-colors"
@@ -504,7 +574,7 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
                 </div>
 
                 {/* AWS Conversational Assistants */}
-                <div className="mb-8">
+                {/* <div className="mb-8">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
                     <h4 className="text-md font-medium text-white">AWS Conversational Assistants</h4>
@@ -569,79 +639,11 @@ export const MCPManagerModal: React.FC<MCPManagerModalProps> = ({ isOpen, onClos
                       </div>
                     ))}
                   </div>
-                </div>
+                </div> */}
 
 
 
-                {/* Other Servers */}
-                {serverTemplates.filter(template => !['conversational', 'development'].includes(template.category)).length > 0 && (
-                  <div className="mb-8">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                      <h4 className="text-md font-medium text-white">Other MCP Servers</h4>
-                      <span className="text-xs bg-gray-900/50 text-gray-300 px-2 py-1 rounded">Additional Tools</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {serverTemplates.filter(template => !['conversational', 'development'].includes(template.category)).map((template) => (
-                        <div
-                          key={template.name}
-                          className="border border-slate-700 rounded-lg p-4 bg-slate-800/50 hover:bg-slate-800/70 transition-colors"
-                        >
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-3">
-                              <div className={`flex items-center gap-2 ${getCategoryColor(template.category)}`}>
-                                {getCategoryIcon(template.category)}
-                              </div>
-                              <div>
-                                <span className="font-medium text-white text-sm">
-                                  {template.name}
-                                </span>
-                                <div className="text-xs text-slate-400 capitalize">
-                                  {template.category}
-                                </div>
-                              </div>
-                            </div>
-
-                            <button
-                              onClick={() => {
-                                setSelectedTemplate(template.name);
-                                setCustomArgs(template.args.join(' '));
-                                setCustomEnv(template.env || {});
-                                setShowAddServer(true);
-                              }}
-                              className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-xs font-medium"
-                            >
-                              Add Server
-                            </button>
-                          </div>
-
-                          <div className="text-xs text-slate-300 mb-3">
-                            {template.description}
-                          </div>
-
-                          <div className="bg-slate-900/50 rounded p-2">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Terminal className="w-3 h-3 text-slate-400" />
-                              <span className="text-xs text-slate-400">Command</span>
-                              <button
-                                onClick={() => {
-                                  navigator.clipboard.writeText(`${template.command} ${template.args.join(' ')}`);
-                                }}
-                                className="ml-auto p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"
-                                title="Copy command"
-                              >
-                                <Copy className="w-3 h-3" />
-                              </button>
-                            </div>
-                            <div className="font-mono text-xs text-green-300 break-all">
-                              {template.command} {template.args.join(' ')}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+               
               </div>
             </div>
           )}

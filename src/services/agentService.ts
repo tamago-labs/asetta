@@ -25,8 +25,7 @@ class AgentService {
             mcpServers: agentData.mcpServers || (
               agentData.mcpServerName ? ['filesystem', agentData.mcpServerName] : ['filesystem']
             ),
-            isOnline: agentData.isOnline || false,
-            healthStatus: agentData.healthStatus || 'offline',
+            isOnline: agentData.isOnline || false, 
             metrics: agentData.metrics || {
               totalChats: 0,
               toolsUsed: 0,
@@ -50,7 +49,13 @@ class AgentService {
   // Save agents to localStorage
   private saveAgents(): void {
     try {
-      const agentsArray = Array.from(this.agents.values());
+      const agentsArray = Array.from(this.agents.values()).map(agent => ({
+        ...agent, 
+        messages: agent.messages?.map(msg => ({
+          ...msg,
+          timestamp: msg.timestamp.toISOString()
+        }))
+      }));
       localStorage.setItem(this.storage_key, JSON.stringify(agentsArray));
     } catch (error) {
       console.error('Failed to save agents to storage:', error);
@@ -152,7 +157,7 @@ class AgentService {
       metadata
     };
 
-    agent.messages.push(message);
+    agent.messages.push(message); 
 
     this.agents.set(agentId, agent);
     this.saveAgents();
@@ -184,9 +189,7 @@ class AgentService {
   // Get tools context for agent's system prompt
   getAgentToolsContext(agentId: string): string {
     const agent = this.agents.get(agentId);
-    if (!agent) return '';
-
-    return agent.toolsContext || '';
+    return agent?.toolsContext || '';
   }
 
   // Update agent's tools context
@@ -214,25 +217,25 @@ class AgentService {
 
     try {
       // Get current server statuses
-      const allServers = mcpService.getServers();
-      const serverStatusMap = new Map(allServers.map(s => [s.config.name, s.status]));
+      // const allServers = mcpService.getServers();
+      // const serverStatusMap = new Map(allServers.map(s => [s.config.name, s.status]));
 
-      console.log(`=== Agent: ${agent.name} ===`);
-      console.log('Required servers:', agent.mcpServers);
+      // console.log(`=== Agent: ${agent.name} ===`);
+      // console.log('Required servers:', agent.mcpServers);
 
-      // Check each required server
-      // const serverStatuses = agent.mcpServers.map(serverName => {
+      // // Check each required server
+      // const serverStatuses = agent.mcpServers?.map(serverName => {
       //   const status = serverStatusMap.get(serverName) || 'not-found'; 
       //   console.log(`  ${serverName}: ${status}`);
       //   return { name: serverName, status, isRunning: status === 'running' };
-      // });
+      // }) || [];
 
-      // Count running servers
+      // // Count running servers
       // const runningCount = serverStatuses.filter(s => s.isRunning).length;
       // const totalCount = serverStatuses.length;
 
-      // Update agent status
-      // agent.isOnline = totalCount > 0 && runningCount === totalCount;
+      // // Update agent status - online if all required servers are running
+      // agent.isOnline = totalCount > 0 && runningCount === totalCount; 
 
       // console.log(`Result: ${runningCount}/${totalCount} servers running -> ${agent.isOnline ? 'ONLINE' : 'OFFLINE'}`);
 
@@ -240,7 +243,7 @@ class AgentService {
 
     } catch (error) {
       console.error('Failed to update agent status:', error);
-      agent.isOnline = false;
+      agent.isOnline = false; 
     }
 
     // Save changes
@@ -277,6 +280,35 @@ class AgentService {
   refreshAllAgentStatus(): void {
     console.log('Manually refreshing all agent statuses...');
     this.updateAllAgentsOnlineStatus();
+  }
+
+  // Auto-start required MCP servers for agent
+  async startRequiredServers(agentId: string): Promise<boolean[]> {
+    const agent = this.agents.get(agentId);
+    if (!agent || !agent.mcpServers) return [];
+
+    const results: boolean[] = [];
+    
+    for (const serverName of agent.mcpServers) {
+      try {
+        const server = mcpService.getServer(serverName);
+        if (server && server.status !== 'running') {
+          console.log(`Starting required server for agent ${agent.name}: ${serverName}`);
+          const success = await mcpService.startServer(serverName);
+          results.push(success);
+        } else {
+          results.push(true); // Already running
+        }
+      } catch (error) {
+        console.error(`Failed to start server ${serverName} for agent ${agent.name}:`, error);
+        results.push(false);
+      }
+    }
+
+    // Update agent status after starting servers
+    setTimeout(() => this.updateAgentOnlineStatus(agentId), 1000);
+
+    return results;
   }
 }
 

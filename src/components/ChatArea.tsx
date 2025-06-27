@@ -3,8 +3,10 @@ import { Agent } from '../types/agent';
 import { ClaudeService, ChatMessage } from '../services/claudeService';
 import { mcpService } from '../services/mcpService';
 import { agentChatService } from '../services/agentChatService';
+import { agentService } from '../services/agentService';
 import clsx from 'clsx';
 import {
+  Settings,
   Copy,
   FileText,
   Send,
@@ -18,7 +20,10 @@ import {
   MoreVertical,
   Download,
   Search,
-  X
+  X,
+  User,
+  Users,
+  Play
 } from 'lucide-react';
 
 interface Message {
@@ -39,10 +44,12 @@ interface ChatAreaProps {
   messages: Message[];
   agents: (Agent)[];
   selectedAgentId: string | null;
-  onAddAgent?: () => void;
+  onAddAgent?: () => void; 
+  onAgentSelect?: (agentId: string) => void;
+  setSelectedAgentId?: (agent: any) => void
 }
 
-export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAgentId, onAddAgent }) => {
+export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAgentId, onAddAgent, setSelectedAgentId }) => {
   const [newMessage, setNewMessage] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('')
@@ -60,11 +67,6 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
   const currentAgentId = selectedAgentId || undefined
 
   // Get messages for current agent/general chat
-  // const getCurrentChatHistory = (): ChatMessage[] => {
-  //   return agentChatService.getAgentChatHistory(currentAgentId);
-  // };
-
-  // Refresh chat history when agent changes
   useEffect(() => {
     setRefreshKey(prev => prev + 1);
   }, [currentAgentId]);
@@ -84,9 +86,6 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
     type: 'text',
     sender: msg.sender
   }));
-
-  // Always use all messages (no agent filtering needed for now)
-  // const allMessages = [...messages, ...localMessages];
 
   // Filter messages based on search query
   const filteredMessages = showSearch && searchQuery
@@ -357,6 +356,27 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
     }
   };
 
+  const handleStartRequiredServers = async (agentId: string) => {
+    const agent = agentService.getAgent(agentId);
+    if (!agent) return;
+
+    try {
+      // Start all required MCP servers for this agent
+      for (const serverName of agent.mcpServers || []) {
+        const server = mcpService.getServer(serverName);
+        if (server && server.status !== 'running') {
+          console.log(`Starting required server: ${serverName}`);
+          await mcpService.startServer(serverName);
+        }
+      }
+      
+      // Refresh agent status
+      agentService.refreshAllAgentStatus();
+    } catch (error) {
+      console.error('Failed to start required servers:', error);
+    }
+  };
+
   const renderMessage = (message: Message, index: number) => {
     const isUser = message.sender === 'user';
     const isStreamingMessage = isStreaming && index === displayMessages.length - 1;
@@ -368,7 +388,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
           <div className="flex-shrink-0">
             {isUser ? (
               <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-sm font-medium text-white">
-                U
+                <User className="w-5 h-5" />
               </div>
             ) : (
               <div className="w-9 h-9 rounded-lg bg-purple-600 flex items-center justify-center text-sm font-medium text-white">
@@ -536,6 +556,18 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
     );
   };
 
+  // Get current agent info
+  const currentAgent = currentAgentId ? agentService.getAgent(currentAgentId) : null;
+
+  // Check if no agent is selected
+  const showAgentSelection = !currentAgentId;
+
+  // Check if agent has offline MCP servers
+  const hasOfflineServers = currentAgent ? currentAgent.mcpServers?.some(serverName => {
+    const server = mcpService.getServer(serverName);
+    return server && server.status !== 'running';
+  }) : false;
+
   return (
     <div className="w-full h-full flex flex-col bg-slate-900">
       {/* Header */}
@@ -546,10 +578,12 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
               <Bot className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="font-semibold text-white text-lg"># claude-chat</h2>
+              <h2 className="font-semibold text-white text-lg">
+                {currentAgent ? `# ${currentAgent.name}` : '# not-selected'}
+              </h2>
               <p className="text-sm text-slate-400">
-                Chat with Claude AI assistant
-                {(() => {
+                {currentAgent ? currentAgent.description : 'Select an agent to get started'}
+                {/* {(() => {
                   try {
                     const availableTools = mcpService.getAvailableTools();
                     const toolCount = availableTools.reduce((total, server) => total + server.tools.length, 0);
@@ -557,7 +591,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
                   } catch {
                     return '';
                   }
-                })()}
+                })()} */}
               </p>
             </div>
           </div>
@@ -571,14 +605,6 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
             >
               <Search className="w-4 h-4" />
             </button>
-
-            {/* <button
-              onClick={exportChat}
-              className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
-              title="Export chat"
-            >
-              <Download className="w-4 h-4" />
-            </button>*/}
             
             <button
               onClick={clearAllMessages}
@@ -589,8 +615,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
             </button> 
 
             <div className="flex items-center space-x-1 text-xs text-slate-400">
-              <div className={`w-2 h-2 rounded-full ${'bg-green-400'}`}></div>
-              <span>{'Online'}</span>
+              <div className={`w-2 h-2 rounded-full ${currentAgent?.isOnline ? 'bg-green-400' : 'bg-red-400'}`}></div>
+              <span>{currentAgent?.isOnline ? 'Online' : 'Offline'}</span>
             </div>
 
           </div>
@@ -617,81 +643,170 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
             </button>
           </div>
         )}
+
+        {/* Agent Status Banner */}
+        {currentAgent && hasOfflineServers && (
+          <div className="mt-3 bg-yellow-900/20 border border-yellow-700/30 rounded-lg p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 text-yellow-400" />
+                <span className="text-sm text-yellow-200">
+                  Some MCP servers required by this agent are offline
+                </span>
+              </div>
+              <button
+                onClick={() => handleStartRequiredServers(currentAgent.id)}
+                className="flex items-center space-x-1 px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-xs transition-colors"
+              >
+                <Play className="w-3 h-3" />
+                <span>Start Servers</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Messages */}
+      {/* Messages or Agent Selection */}
       <div className="flex-1 overflow-y-auto min-h-0">
-        <div className="py-2">
-          {filteredMessages.length > 0 ? (
-            filteredMessages.map((message, index) => renderMessage(message, index))
-          ) : showSearch && searchQuery ? (
-            <div className="px-6 text-center text-slate-400 mt-12">
-              <div className="text-4xl mb-4">🔍</div>
-              <h3 className="text-lg font-medium mb-2">No matches found</h3>
-              <p className="text-sm">Try different search terms</p>
-            </div>
-          ) : (
-            <div className="px-6 text-center text-slate-400 mt-12">
-              <div className="text-4xl mb-4">🤖</div>
-              <h3 className="text-lg font-medium mb-2">Welcome to Claude Chat</h3>
-              <p className="text-sm">
-                Start a conversation with Claude AI. I can help with coding, explanations, creative writing, and more!
-                {(() => {
-                  try {
-                    const availableTools = mcpService.getAvailableTools();
-                    const toolCount = availableTools.reduce((total, server) => total + server.tools.length, 0);
-                    return toolCount > 0 ? ` I also have access to ${toolCount} MCP tools for advanced operations.` : '';
-                  } catch {
-                    return '';
-                  }
-                })()}
+        {showAgentSelection ? (
+          // Agent Selection UI
+          <div className="flex flex-col items-center justify-center h-full px-6 text-center">
+            <div className="max-w-md">
+              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+                <Users className="w-8 h-8 text-white" />
+              </div>
+              
+              <h3 className="text-2xl font-bold text-white mb-3">Select an Agent</h3>
+              <p className="text-slate-400 mb-8 leading-relaxed">
+                Choose an agent to start chatting, or create a new one with specialized capabilities and MCP tools.
               </p>
+
+              {agents.length > 0 ? (
+                <div className="space-y-3 mb-6">
+                  <h4 className="text-sm font-medium text-slate-300 text-left">Available Agents:</h4>
+                  <div className="grid gap-2">
+                    {agents.map((agent) => (
+                      <button
+                        key={agent.id}
+                        onClick={() => setSelectedAgentId && setSelectedAgentId(agent.id)}
+                        className="flex items-center space-x-3 p-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg transition-colors text-left"
+                      >
+                        <div className={`w-3 h-3 rounded-full ${agent.isOnline ? 'bg-green-400' : 'bg-red-400'}`} />
+                        <div className="flex-1">
+                          <div className="font-medium text-white">{agent.name}</div> 
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {agent.mcpServers?.length || 0} MCP Needed
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="mb-6 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
+                  <p className="text-sm text-slate-400">No agents created yet</p>
+                </div>
+              )}
+
+              <button
+                onClick={onAddAgent}
+                className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create New Agent</span>
+              </button>
+              <div className="bg-purple-900/20 mt-6 border border-purple-500/30 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                   
+                  <div> 
+                    <p className="text-yellow-300 text-sm font-medium">
+                    ⚠️ Ensure that the required MCP servers for each agent are running. Check in the MCP Manager.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+          </div>
+        ) : (
+          // Messages
+          <div className="py-2">
+            {filteredMessages.length > 0 ? (
+              filteredMessages.map((message, index) => renderMessage(message, index))
+            ) : showSearch && searchQuery ? (
+              <div className="px-6 text-center text-slate-400 mt-12">
+                <div className="text-4xl mb-4">🔍</div>
+                <h3 className="text-lg font-medium mb-2">No matches found</h3>
+                <p className="text-sm">Try different search terms</p>
+              </div>
+            ) : (
+              <div className="px-6 text-center text-slate-400 mt-12">
+                <div className="text-4xl mb-4">🤖</div>
+                <h3 className="text-lg font-medium mb-2">
+                  {currentAgent ? `Start chatting with ${currentAgent.name}` : 'Welcome to Claude Chat'}
+                </h3>
+                <p className="text-sm">
+                  {currentAgent 
+                    ? `${currentAgent.description} I'm ready to help you with specialized capabilities.`
+                    : 'Start a conversation with Claude AI. I can help with coding, explanations, creative writing, and more!'
+                  }
+                  {(() => {
+                    try {
+                      const availableTools = mcpService.getAvailableTools();
+                      const toolCount = availableTools.reduce((total, server) => total + server.tools.length, 0);
+                      return toolCount > 0 ? ` I also have access to ${toolCount} MCP tools for advanced operations.` : '';
+                    } catch {
+                      return '';
+                    }
+                  })()}
+                </p>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
       </div>
 
       {/* Message Input */}
-      <div className="p-4 border-t border-slate-700 bg-slate-800 flex-shrink-0">
-
-        <form onSubmit={handleSendMessage}>
-          <div className="flex items-end space-x-3">
-            <div className="flex-1 relative">
-              <textarea
-                ref={textareaRef}
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder={isStreaming
-                  ? "Claude is typing..."
-                  : "Message Claude... (Shift+Enter for new line)"
-                }
-                disabled={isStreaming}
-                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                rows={1}
-                style={{ minHeight: '44px', maxHeight: '120px' }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage(e);
+      {!showAgentSelection && (
+        <div className="p-4 border-t border-slate-700 bg-slate-800 flex-shrink-0">
+          <form onSubmit={handleSendMessage}>
+            <div className="flex items-end space-x-3">
+              <div className="flex-1 relative">
+                <textarea
+                  ref={textareaRef}
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder={isStreaming
+                    ? "Claude is typing..."
+                    : `Message ${currentAgent?.name || 'Claude'}... (Shift+Enter for new line)`
                   }
-                }}
-              />
+                  disabled={isStreaming}
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  rows={1}
+                  style={{ minHeight: '44px', maxHeight: '120px' }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage(e);
+                    }
+                  }}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={!newMessage.trim() || isStreaming}
+                className="flex-shrink-0 p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+              >
+                {isStreaming ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Send size={20} />
+                )}
+              </button>
             </div>
-            <button
-              type="submit"
-              disabled={!newMessage.trim() || isStreaming}
-              className="flex-shrink-0 p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-            >
-              {isStreaming ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Send size={20} />
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 };

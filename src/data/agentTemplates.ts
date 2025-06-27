@@ -27,7 +27,7 @@ Guidelines
 - Provide concise compliance checklists and next-step instructions.
 - Use Asseta MCP tools for all platform interactions.
 - Always add: “This is educational only—confirm with qualified legal counsel.”`,
-    mcpServerName: ['asetta-mcp-legal', 'web-search']
+    mcpServerName: ['asetta-mcp-legal' ]
   },
   {
     id: 'tokenization-agent',

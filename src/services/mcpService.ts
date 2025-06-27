@@ -459,13 +459,13 @@ export class MCPService {
         description: 'Query enterprise knowledge bases with citation support using Amazon Bedrock',
         category: 'conversational'
       }, 
-      {
-        name: 'web-search',
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-web-search'],
-        description: 'Web search and content scraping capabilities for research and documentation',
-        category: 'search'
-      }
+      // {
+      //   name: 'web-search',
+      //   command: 'npx',
+      //   args: ['-y', '@modelcontextprotocol/server-web-search'],
+      //   description: 'Web search and content scraping capabilities for research and documentation',
+      //   category: 'search'
+      // }
     ];
   }
 
