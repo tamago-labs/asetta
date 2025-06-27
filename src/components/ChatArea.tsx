@@ -46,8 +46,8 @@ interface ChatAreaProps {
 export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAgentId, onAddAgent }) => {
   const [newMessage, setNewMessage] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingMessage, setStreamingMessage] = useState('')
   const [claudeService, setClaudeService] = useState<ClaudeService | null>(null);
-  const [agentChatHistories, setAgentChatHistories] = useState<Map<string, ChatMessage[]>>(new Map());
   const [refreshKey, setRefreshKey] = useState(0);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,29 +57,27 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Get current agent ID (could be null for general chat)
-  const currentAgentId = selectedAgentId || 'general';
+  // Get current agent ID
+  const currentAgentId = selectedAgentId || undefined
 
   // Get messages for current agent/general chat
-  const getCurrentChatHistory = (): ChatMessage[] => {
-    if (currentAgentId === 'general') {
-      return agentChatHistories.get('general') || [];
-    }
-    return agentChatService.getAgentChatHistory(currentAgentId);
-  };
+  // const getCurrentChatHistory = (): ChatMessage[] => {
+  //   return agentChatService.getAgentChatHistory(currentAgentId);
+  // };
 
   // Refresh chat history when agent changes
   useEffect(() => {
-    if (currentAgentId !== 'general') {
-      // Force re-render to get latest chat history from agentChatService
-      setRefreshKey(prev => prev + 1);
-    }
+    setRefreshKey(prev => prev + 1);
   }, [currentAgentId]);
 
-  const currentChatHistory = getCurrentChatHistory();
+  let currentChatHistory: any = []
+
+  if (currentAgentId) {
+    currentChatHistory = agentChatService.getAgentChatHistory(currentAgentId)
+  }
 
   // Convert ChatMessage to Message format for display
-  const displayMessages: Message[] = currentChatHistory.map(msg => ({
+  const displayMessages: Message[] = currentChatHistory.map((msg: any) => ({
     id: msg.id,
     agentId: currentAgentId,
     content: msg.content,
@@ -88,6 +86,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
     sender: msg.sender
   }));
 
+  // Always use all messages (no agent filtering needed for now)
+  // const allMessages = [...messages, ...localMessages];
 
   // Filter messages based on search query
   const filteredMessages = showSearch && searchQuery
@@ -101,12 +101,6 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
     const service = new ClaudeService();
     setClaudeService(service);
 
-    // Initialize general chat history if needed
-    if (!agentChatHistories.has('general')) {
-      const updatedHistories = new Map(agentChatHistories);
-      updatedHistories.set('general', []);
-      setAgentChatHistories(updatedHistories);
-    }
   }, []);
 
   useEffect(() => {
@@ -114,7 +108,6 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
     if (selectedAgentId) {
       agentChatService.setActiveAgent(selectedAgentId);
     } else {
-      // No agent selected - use general mode
       if (claudeService) {
         claudeService.setActiveAgent(null);
       }
@@ -157,39 +150,32 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
   };
 
   const deleteMessage = (messageId: string) => {
-    if (currentAgentId === 'general') {
-      const updatedHistories = new Map(agentChatHistories);
-      const history = updatedHistories.get('general') || [];
-      const filteredHistory = history.filter(msg => msg.id !== messageId);
-      updatedHistories.set('general', filteredHistory);
-      setAgentChatHistories(updatedHistories);
-    } else {
-      // For agent chats, we need to rebuild the history
+
+    if (currentAgentId) {
       const currentHistory = agentChatService.getAgentChatHistory(currentAgentId);
       const filteredHistory = currentHistory.filter(msg => msg.id !== messageId);
       agentChatService.clearAgentChatHistory(currentAgentId);
       filteredHistory.forEach(msg => {
         agentChatService.addMessageToHistory(currentAgentId, msg);
       });
+      setRefreshKey(prev => prev + 1);
     }
+
   };
- 
+
+
+
+  const startEdit = (messageId: string, content: string) => {
+    setEditingMessageId(messageId);
+    setEditContent(content);
+  };
+
   const saveEdit = (messageId: string) => {
-    if (currentAgentId === 'general') {
-      const updatedHistories = new Map(agentChatHistories);
-      const history = updatedHistories.get('general') || [];
-      const updatedHistory = history.map(msg => 
-        msg.id === messageId 
-          ? { ...msg, content: editContent, timestamp: new Date() }
-          : msg
-      );
-      updatedHistories.set('general', updatedHistory);
-      setAgentChatHistories(updatedHistories);
-    } else {
+    if (currentAgentId) {
       // For agent chats, rebuild history with edited message
       const currentHistory = agentChatService.getAgentChatHistory(currentAgentId);
-      const updatedHistory = currentHistory.map(msg => 
-        msg.id === messageId 
+      const updatedHistory = currentHistory.map(msg =>
+        msg.id === messageId
           ? { ...msg, content: editContent, timestamp: new Date() }
           : msg
       );
@@ -200,6 +186,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
     }
     setEditingMessageId(null);
     setEditContent('');
+    setRefreshKey(prev => prev + 1);
   };
 
   const cancelEdit = () => {
@@ -216,16 +203,12 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
 
     // Remove all messages after the user message
     const messagesToKeep = currentChatHistory.slice(0, messageIndex);
-    
+
     // Update the chat history
-    if (currentAgentId === 'general') {
-      const updatedHistories = new Map(agentChatHistories);
-      updatedHistories.set('general', messagesToKeep);
-      setAgentChatHistories(updatedHistories);
-    } else {
+    if (currentAgentId) {
       // For agents, we need to clear and re-add messages
       agentChatService.clearAgentChatHistory(currentAgentId);
-      messagesToKeep.forEach(msg => {
+      messagesToKeep.forEach((msg: any) => {
         agentChatService.addMessageToHistory(currentAgentId, msg);
       });
     }
@@ -236,42 +219,44 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
 
     try {
       const chatHistory: ChatMessage[] = messagesToKeep
-        .filter(msg => msg.sender === 'user' || msg.sender === 'assistant');
+        .filter((msg: any) => msg.sender === 'user' || msg.sender === 'assistant');
 
       let responseContent = '';
-      let streamingMessage: ChatMessage = {
-        id: assistantMessageId,
-        sender: 'assistant',
-        content: '',
-        timestamp: new Date()
-      };
+      // let streamingMessage: ChatMessage = {
+      //   id: assistantMessageId,
+      //   sender: 'assistant',
+      //   content: '',
+      //   timestamp: new Date()
+      // };
 
       // Update UI with streaming message
       const updateStreamingMessage = (content: string) => {
-        streamingMessage.content = content;
-        if (currentAgentId === 'general') {
-          const updatedHistories = new Map(agentChatHistories);
-          const history = updatedHistories.get('general') || [];
-          const existingIndex = history.findIndex(msg => msg.id === assistantMessageId);
-          if (existingIndex >= 0) {
-            history[existingIndex] = { ...streamingMessage };
-          } else {
-            history.push(streamingMessage);
-          }
-          updatedHistories.set('general', [...history]);
-          setAgentChatHistories(updatedHistories);
-        }
+        // streamingMessage.content = content;
+        console.log("updating...", content)
+        setStreamingMessage(content)
+        // if (currentAgentId === 'general') {
+        //   const updatedHistories = new Map(agentChatHistories);
+        //   const history = updatedHistories.get('general') || [];
+        //   const existingIndex = history.findIndex(msg => msg.id === assistantMessageId);
+        //   if (existingIndex >= 0) {
+        //     history[existingIndex] = { ...streamingMessage };
+        //   } else {
+        //     history.push(streamingMessage);
+        //   }
+        //   updatedHistories.set('general', [...history]);
+        //   setAgentChatHistories(updatedHistories);
+        // }
       };
 
       updateStreamingMessage('');
-      
+
       const stream = claudeService.streamChat(chatHistory, userMessage.content);
 
       for await (const chunk of stream) {
         responseContent += chunk;
         updateStreamingMessage(responseContent);
       }
-      
+
       // Save the final response
       const finalMessage: ChatMessage = {
         id: assistantMessageId,
@@ -279,10 +264,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
         content: responseContent,
         timestamp: new Date()
       };
-      
-      if (currentAgentId === 'general') {
-        // Already updated during streaming
-      } else {
+
+      if (currentAgentId) {
         agentChatService.addMessageToHistory(currentAgentId, finalMessage);
         setRefreshKey(prev => prev + 1);
       }
@@ -303,7 +286,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
     const currentMessage = newMessage.trim();
     setNewMessage('');
     setIsStreaming(true);
-    
+
     // Add user message to history
     const userMessage: ChatMessage = {
       id: userMessageId,
@@ -311,21 +294,16 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
       content: currentMessage,
       timestamp: new Date()
     };
-    
-    if (currentAgentId === 'general') {
-      const updatedHistories = new Map(agentChatHistories);
-      const history = updatedHistories.get('general') || [];
-      history.push(userMessage);
-      updatedHistories.set('general', history);
-      setAgentChatHistories(updatedHistories);
-    } else {
+
+    if (currentAgentId) {
       agentChatService.addMessageToHistory(currentAgentId, userMessage);
       setRefreshKey(prev => prev + 1);
     }
 
     try {
       // Get chat history for streaming
-      const chatHistory = getCurrentChatHistory().filter(msg => msg.sender === 'user' || msg.sender === 'assistant');
+      const chatHistoryBeforeFilter = currentAgentId ? agentChatService.getAgentChatHistory(currentAgentId) : []
+      const chatHistory = chatHistoryBeforeFilter.filter(msg => msg.sender === 'user' || msg.sender === 'assistant');
 
       // Start streaming response
       let responseContent = '';
@@ -339,19 +317,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
       // Update UI with streaming message
       const updateStreamingMessage = (content: string) => {
         streamingMessage.content = content;
-        // Force re-render by updating state
-        if (currentAgentId === 'general') {
-          const updatedHistories = new Map(agentChatHistories);
-          const history = updatedHistories.get('general') || [];
-          const existingIndex = history.findIndex(msg => msg.id === assistantMessageId);
-          if (existingIndex >= 0) {
-            history[existingIndex] = { ...streamingMessage };
-          } else {
-            history.push(streamingMessage);
-          }
-          updatedHistories.set('general', [...history]);
-          setAgentChatHistories(updatedHistories);
-        }
+        setStreamingMessage(content) 
       };
 
       // Add initial streaming message
@@ -364,7 +330,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
         responseContent += chunk;
         updateStreamingMessage(responseContent);
       }
-      
+
       // Save final message
       const finalMessage: ChatMessage = {
         id: assistantMessageId,
@@ -372,17 +338,15 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
         content: responseContent,
         timestamp: new Date()
       };
-      
-      if (currentAgentId === 'general') {
-        // Already updated during streaming
-      } else {
+
+      if (currentAgentId) {
         agentChatService.addMessageToHistory(currentAgentId, finalMessage);
         setRefreshKey(prev => prev + 1);
       }
 
     } catch (error) {
       console.error('Failed to send message:', error);
-      
+
       // Add error message
       const errorMessage: ChatMessage = {
         id: `error_${Date.now()}`,
@@ -390,28 +354,22 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
         content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         timestamp: new Date()
       };
-      
-      if (currentAgentId === 'general') {
-        const updatedHistories = new Map(agentChatHistories);
-        const history = updatedHistories.get('general') || [];
-        history.push(errorMessage);
-        updatedHistories.set('general', history);
-        setAgentChatHistories(updatedHistories);
-      } else {
+
+      if (currentAgentId) {
         agentChatService.addMessageToHistory(currentAgentId, errorMessage);
         setRefreshKey(prev => prev + 1);
       }
+
     } finally {
       setIsStreaming(false);
     }
   };
-
-
+ 
   const renderMessage = (message: Message, index: number) => {
     const isUser = message.sender === 'user';
-    const isStreamingMessage = isStreaming && message.sender === 'assistant' && index === displayMessages.length - 1;
+    const isStreamingMessage = isStreaming && index === displayMessages.length - 1;
     const isEditing = editingMessageId === message.id;
-    
+
     return (
       <div key={`${message.id}-${refreshKey}`} className="group hover:bg-slate-800/30 px-4 py-3 transition-colors relative">
         <div className="flex items-start space-x-3">
@@ -431,8 +389,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
               <span className="font-semibold text-white">
                 {isUser ? 'You' : 'Claude'}
               </span>
-              <span 
-                className="text-xs text-slate-400 cursor-help" 
+              <span
+                className="text-xs text-slate-400 cursor-help"
                 title={formatFullTime(message.timestamp)}
               >
                 {formatTime(message.timestamp)}
@@ -440,13 +398,13 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
               {isStreamingMessage && (
                 <div className="flex items-center space-x-1 text-xs text-blue-400">
                   <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></div>
-                  <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                  <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                  <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
                   <span className="ml-1">processing...</span>
                 </div>
               )}
             </div>
-            
+
             <div className="mt-1">
               {isEditing ? (
                 <div className="space-y-2">
@@ -485,7 +443,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
                         </span>
                       )}
                     </div>
-                    <button 
+                    <button
                       onClick={() => copyToClipboard(message.content)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-slate-700 rounded"
                     >
@@ -526,6 +484,9 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
                       <div key={lineIndex} className="whitespace-pre-wrap">{line}</div>
                     ))
                   )}
+                  { isStreamingMessage && streamingMessage && (
+                    <div  className="whitespace-pre-wrap">{streamingMessage}</div>
+                  ) }
                   {isStreamingMessage && message.content && (
                     <div className="inline-flex items-center ml-1">
                       <div className="w-2 h-4 bg-blue-400 animate-pulse rounded-sm"></div>
@@ -535,7 +496,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
               )}
             </div>
           </div>
-          
+
           {/* Message Actions */}
           <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-1">
             <button
@@ -545,10 +506,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
             >
               <Copy size={14} />
             </button>
-            
+
             {!isStreaming && (
               <>
-                {/* {isUser && (
+                {isUser && (
                   <button
                     onClick={() => startEdit(message.id, message.content)}
                     className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"
@@ -556,8 +517,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
                   >
                     <Edit3 size={14} />
                   </button>
-                )} */}
-                
+                )}
+
                 {!isUser && index > 0 && (
                   <button
                     onClick={() => regenerateResponse(index)}
@@ -567,7 +528,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
                     <RotateCcw size={14} />
                   </button>
                 )}
-                
+
                 <button
                   onClick={() => deleteMessage(message.id)}
                   className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-red-400"
@@ -618,7 +579,22 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
             >
               <Search className="w-4 h-4" />
             </button>
- 
+
+            {/* <button
+              onClick={exportChat}
+              className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
+              title="Export chat"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+            
+            <button
+              onClick={clearAllMessages}
+              className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-red-400 transition-colors"
+              title="Clear all messages"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button> */}
 
             <div className="flex items-center space-x-1 text-xs text-slate-400">
               <div className={`w-2 h-2 rounded-full ${'bg-green-400'}`}></div>
