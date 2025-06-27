@@ -7,10 +7,48 @@ export class MCPService {
   private eventListeners: Map<string, ((event: MCPServerEvent) => void)[]> = new Map();
   private workspaceRoot: string | null = null;
   private logger = Logger.getInstance();
+  private storage_key = 'asetta-mcp-servers';
 
   constructor() {
+    this.loadServersFromStorage();
     this.setupDefaultServers();
     this.logger.info('mcp', 'MCP Service initialized with Tauri integration');
+  }
+
+  // Load servers from localStorage
+  private loadServersFromStorage(): void {
+    try {
+      const stored = localStorage.getItem(this.storage_key);
+      if (stored) {
+        const serversData = JSON.parse(stored);
+        serversData.forEach((serverData: any) => {
+          const instance: MCPServerInstance = {
+            config: serverData.config,
+            status: 'stopped', // Always start as stopped on load
+            tools: [],
+            resources: [],
+            error: undefined,
+            lastStarted: serverData.lastStarted ? new Date(serverData.lastStarted) : undefined
+          };
+          this.servers.set(serverData.config.name, instance);
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load MCP servers from storage:', error);
+    }
+  }
+
+  // Save servers to localStorage
+  private saveServersToStorage(): void {
+    try {
+      const serversArray = Array.from(this.servers.values()).map(server => ({
+        config: server.config,
+        lastStarted: server.lastStarted
+      }));
+      localStorage.setItem(this.storage_key, JSON.stringify(serversArray));
+    } catch (error) {
+      console.error('Failed to save MCP servers to storage:', error);
+    }
   }
 
   setWorkspaceRoot(path: string | null) {
@@ -49,20 +87,23 @@ export class MCPService {
   }
 
   private setupDefaultServers() {
-    const filesystemServer: MCPServerConfig = {
-      name: 'filesystem',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-filesystem', '/'],
-      description: 'Provides file system operations and navigation',
-      category: 'filesystem'
-    };
+    // Only add filesystem if not already loaded from storage
+    if (!this.servers.has('filesystem')) {
+      const filesystemServer: MCPServerConfig = {
+        name: 'filesystem',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-filesystem', '/'],
+        description: 'Provides file system operations and navigation',
+        category: 'filesystem'
+      };
 
-    this.servers.set('filesystem', {
-      config: filesystemServer,
-      status: 'stopped',
-      tools: [],
-      resources: []
-    });
+      this.servers.set('filesystem', {
+        config: filesystemServer,
+        status: 'stopped',
+        tools: [],
+        resources: []
+      });
+    }
   }
 
   addEventListener(event: string, callback: (event: MCPServerEvent) => void) {
@@ -146,6 +187,9 @@ export class MCPService {
       this.emit('serverStatusChanged', { serverName, status: 'running' });
       this.emit('serverStarted', { serverName, tools: server.tools, resources: server.resources });
       
+      // Save to storage after successful start
+      this.saveServersToStorage();
+      
       return true;
     } catch (error: any) {
       this.logger.error('mcp', `Failed to start MCP server ${serverName}`, { error: error.message });
@@ -215,6 +259,9 @@ export class MCPService {
       resources: []
     });
 
+    // Save to storage after adding
+    this.saveServersToStorage();
+
     this.emit('serverAdded', { serverName: config.name, config });
   }
 
@@ -234,6 +281,10 @@ export class MCPService {
     }
 
     this.servers.delete(serverName);
+    
+    // Save to storage after removing
+    this.saveServersToStorage();
+    
     this.emit('serverRemoved', { serverName });
   }
 
@@ -244,6 +295,10 @@ export class MCPService {
     }
 
     server.config = { ...server.config, ...config };
+    
+    // Save to storage after updating
+    this.saveServersToStorage();
+    
     this.emit('serverConfigUpdated', { serverName, config: server.config });
   }
 
