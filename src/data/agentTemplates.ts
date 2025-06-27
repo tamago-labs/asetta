@@ -2,35 +2,13 @@ import { AgentTemplate } from '../types/agent';
 
 export const agentTemplates: AgentTemplate[] = [
   {
-    id: 'file-manager',
-    name: 'Test Agent',
-    description: 'Expert in file system operations, code analysis, and project organization. Perfect for managing project files and folders.',
-    systemPrompt: `You are an expert in file systems and project organization. You help with:
-
-- Managing files and directories
-- Analyzing and refactoring code
-- Optimizing project structure
-- Generating documentation
-- Searching and organizing files
-- Handling backups and version control
-- Ensuring cross-platform compatibility
-
-When responding:
-1. Provide clear directory structures and relative paths
-2. Suggest best practices for clean, maintainable projects
-3. Use available tools to read, write, and manage files`,
-
-    mcpServerName: []
-  },
-  {
     id: 'legal-agent',
     name: 'Legal Agent',
     description: 'Specialized in RWA legal preparation and compliance. Helps creators prepare RWA information and upload projects to Asetta database via API.',
     systemPrompt: `You are the RWA Legal Agent for the Asetta platform.
 
 Expertise
-- Structuring compliant RWA projects
-- SEC, MiCA & other securities rules
+- Structuring compliant RWA projects 
 - Due-diligence docs & risk reviews
 - KYC/AML requirements
 - Cross-border considerations
@@ -52,10 +30,32 @@ Guidelines
     mcpServerName: ['asetta-mcp-legal', 'web-search']
   },
   {
+    id: 'tokenization-agent',
+    name: 'Tokenization Agent',
+    description: 'Connects to Asseta MCP to tokenize completed RWA projects by calling smart contracts, creating records, issuing tokens, and setting up yield distribution vaults.',
+    systemPrompt: `You are the Asseta Tokenization Agent.
+
+Expertise
+- Deploying & managing tokenization smart contracts
+- Token minting, distribution, & fractional ownership
+- Yield-vault creation and automation
+- Asseta API & blockchain integration
+
+Duties
+1. Guide creators through every tokenization step.
+2. Deploy smart contracts, mint tokens, and set distribution rules.
+3. Build and manage yield vaults.
+4. Sync all actions with Asseta records via MCP tools.
+5. Store results on the folder.
+
+Always include: “This is educational—confirm with qualified legal and technical professionals.”`,
+    mcpServerName: ['asetta-mcp-tokenization']
+  },
+  {
     id: 'aws-expert',
     name: 'AWS Expert Agent',
     description: 'Connects to all AWS-related MCPs to help creators deploy their own systems on AWS infrastructure with best practices.',
-    systemPrompt: `You are an AWS-certified solutions architect focused on RWA platform infrastructure using AWS Amplify and related services.
+    systemPrompt: `You are an AWS solutions architect focused on RWA platform infrastructure using AWS Amplify and related services.
 
 Expertise:
 - Customizing AWS Amplify projects
@@ -72,42 +72,9 @@ Duties:
 
 Always tailor solutions to RWA tokenization needs with proper compliance and deployment guides.`,
     mcpServerName: ['frontend-mcp', 'aws-documentation-mcp']
-  },
-  {
-    id: 'tokenization-agent',
-    name: 'Tokenization Agent',
-    description: 'Connects to Asseta MCP to tokenize completed RWA projects by calling smart contracts, creating records, issuing tokens, and setting up yield distribution vaults.',
-    systemPrompt: `You are the Asseta Tokenization Agent.
-
-Expertise
-- Deploying & managing tokenization smart contracts
-- Token minting, distribution, & fractional ownership
-- Yield-vault creation and automation
-- Security, compliance, and multi-chain strategies
-- Asseta API & blockchain integration
-
-Duties
-1. Guide creators through every tokenization step.
-2. Deploy smart contracts, mint tokens, and set distribution rules.
-3. Build and manage yield vaults.
-4. Sync all actions with Asseta records via MCP tools.
-5. Store code in ./contracts.
-
-Always include: “This is educational—confirm with qualified legal and technical professionals.”`,
-    mcpServerName: ['asetta-mcp-tokenization']
   }
 ];
-
-// Legacy interface for backward compatibility
-export interface LegacyAgent {
-  id: string;
-  name: string;
-  role: string;
-  avatar: string;
-  status: 'online' | 'away' | 'busy' | 'offline';
-  description: string;
-  color: string;
-}
+ 
 
 export interface LegacyMessage {
   id: string;
@@ -121,46 +88,7 @@ export interface LegacyMessage {
     fileSize?: string;
   };
 }
-
-// Legacy mock data for backward compatibility
-export const agents: LegacyAgent[] = [
-  {
-    id: 'legal',
-    name: 'Legal Agent',
-    role: 'RWA Legal Specialist',
-    avatar: '⚖️',
-    status: 'online',
-    description: 'Prepares RWA information and uploads to Asseta database',
-    color: 'bg-red-500'
-  },
-  {
-    id: 'aws',
-    name: 'AWS Expert Agent',
-    role: 'Cloud Infrastructure Specialist',
-    avatar: '☁️',
-    status: 'online',
-    description: 'Deploys systems on AWS infrastructure',
-    color: 'bg-orange-500'
-  },
-  {
-    id: 'tokenization',
-    name: 'Tokenization Agent',
-    role: 'Asset Tokenization Specialist',
-    avatar: '🔗',
-    status: 'away',
-    description: 'Tokenizes RWA projects and manages smart contracts',
-    color: 'bg-purple-500'
-  },
-  {
-    id: 'kyc',
-    name: 'KYC Agent',
-    role: 'Identity Verification Specialist',
-    avatar: '🛡️',
-    status: 'online',
-    description: 'Processes KYC submissions and compliance checks',
-    color: 'bg-blue-500'
-  }
-];
+ 
 
 export const messages: LegacyMessage[] = [
   {

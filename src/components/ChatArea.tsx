@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Agent } from '../types/agent';
-import { LegacyAgent } from '../data/agentTemplates';
+import { Agent } from '../types/agent'; 
 import { ClaudeService, ChatMessage } from '../services/claudeService';
 import { mcpService } from '../services/mcpService';
 import { agentChatService } from '../services/agentChatService';
@@ -38,7 +37,7 @@ interface Message {
 
 interface ChatAreaProps {
   messages: Message[];
-  agents: (Agent | LegacyAgent)[];
+  agents: (Agent)[];
   selectedAgentId: string | null;
   onAddAgent?: () => void;
 }
