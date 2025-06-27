@@ -171,7 +171,7 @@ How can I assist you today?`;
   }
 
   // Get chat history for an agent
-  getAgentChatHistory(agentId?: string): ChatMessage[] {
+  getAgentChatHistory(agentId: string): ChatMessage[] {
     const id = agentId || this.activeAgent?.id;
     if (!id) return [];
     return this.chatHistories.get(id) || [];
@@ -196,19 +196,7 @@ How can I assist you today?`;
     if (!this.activeAgent) return [];
     return this.getAgentChatHistory(this.activeAgent.id);
   }
-
-  // End chat session
-  endAgentChat(): void {
-    // if (this.activeAgent) {
-    //   agentService.updateStatus(this.activeAgent.id, 'away');
-    // }
-    // this.activeAgent = null;
-    
-    // if (this.claudeService) {
-    //   this.claudeService.setActiveAgent(null);
-    // }
-  }
-
+ 
   // Update agent's tools context when servers change
   private updateAgentToolsContext(agent: Agent): void {
     const toolsContext = this.getAgentToolsContext(agent.id);
@@ -228,7 +216,6 @@ How can I assist you today?`;
     return agent.mcpServers.includes(serverName);
   }
 
- 
 }
 
 // Create singleton instance

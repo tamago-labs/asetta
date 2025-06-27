@@ -4,8 +4,8 @@ import {
 } from "@aws-sdk/client-bedrock-runtime";
 import { mcpService } from './mcpService';
 import { agentChatService } from './agentChatService';
-import { Agent } from '../types/agent';
 import { Logger } from '../utils/logger';
+import { Agent } from '../types/agent';
 
 export interface AIResponse {
   content: string;
@@ -36,9 +36,10 @@ export class ClaudeService {
       }
     });
     this.logger.info('claude', 'Claude Bedrock service initialized with MCP support');
-    
+
     // Register with AgentChatService
     agentChatService.registerClaudeService(this);
+
   }
 
   private getAwsConfig(): { awsAccessKey: string; awsSecretKey: string; awsRegion: string } {
@@ -265,7 +266,7 @@ export class ClaudeService {
 
     return messages;
   }
- 
+  
   private buildSystemPrompt(): string {
     const workspaceRoot = mcpService.getWorkspaceRoot();
     
@@ -312,51 +313,27 @@ export class ClaudeService {
     this.logger.info('claude', `Active agent set to: ${agent?.name || 'none'}`);
   }
 
-  // MCP Tool Integration - filtered by current agent or general tools
-  private getMCPTools(): any[] {
+  // MCP Tool Integration
+  private getMCPTools(): any[] { 
     const availableTools = mcpService.getAvailableTools();
+
     const tools: any[] = [];
 
-    if (!this.currentAgent) {
-      // No agent active - return only filesystem tools for general use
-      this.logger.info('claude', 'No active agent, returning filesystem tools only');
-      
-      for (const serverTools of availableTools) {
-        if (serverTools.serverName === 'filesystem') {
-          for (const tool of serverTools.tools) {
-            const formattedTool = {
-              name: `${serverTools.serverName}_${tool.name}`,
-              description: `[${serverTools.serverName}] ${tool.description}`,
-              input_schema: tool.inputSchema
-            };
-            tools.push(formattedTool);
-          }
-        }
-      }
-      return tools;
-    }
-
-    // Agent is active - use agent's configured tools
-    const agentServerNames = this.currentAgent.mcpServers;
     console.log('Available MCP tools:', availableTools);
-    console.log('Agent MCP servers:', agentServerNames);
 
     for (const serverTools of availableTools) {
-      // Only include tools from servers that the agent is connected to
-      if (agentServerNames.includes(serverTools.serverName)) {
-        for (const tool of serverTools.tools) {
-          const formattedTool = {
-            name: `${serverTools.serverName}_${tool.name}`,
-            description: `[${serverTools.serverName}] ${tool.description}`,
-            input_schema: tool.inputSchema
-          };
-          tools.push(formattedTool);
-          console.log('Added tool for Claude:', formattedTool.name, formattedTool.description);
-        }
+      for (const tool of serverTools.tools) {
+        const formattedTool = {
+          name: `${serverTools.serverName}_${tool.name}`,
+          description: `[${serverTools.serverName}] ${tool.description}`,
+          input_schema: tool.inputSchema
+        };
+        tools.push(formattedTool);
+        console.log('Added tool for Claude:', formattedTool.name, formattedTool.description);
       }
     }
 
-    console.log('Formatted tools for Claude (agent-filtered):', tools);
+    console.log('Formatted tools for Claude:', tools);
     return tools;
   }
 
@@ -376,7 +353,7 @@ export class ClaudeService {
 
     try {
       const result = await mcpService.callTool(serverName, actualToolName, input);
-       
+
       console.log('MCP tool result:', result);
 
       // Extract text content from the result

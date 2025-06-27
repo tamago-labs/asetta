@@ -354,7 +354,7 @@ export class MCPService {
       {
         name: 'asetta-mcp-tokenization',
         command: 'npx',
-        args: ['-y', '@tamago-labs/asetta-mcp', '--access_key=YOUR_ACCESS_KEY', '--agent_mode=tokenization'],
+        args: ['-y', '@tamago-labs/asetta-mcp', '--access_key=YOUR_ACCESS_KEY', '--wallet_private_key=YOUR_PRIVATE_KEY' ,'--agent_mode=tokenization'],
         description: 'MCP for tokenization agent for Asetta.xyz platform',
         category: 'core'
       },

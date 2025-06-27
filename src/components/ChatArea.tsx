@@ -163,7 +163,14 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
 
   };
 
-
+  const clearAllMessages = () => {
+    if (confirm('Are you sure you want to clear all messages? This cannot be undone.')) {
+      if (currentAgentId) {
+        agentChatService.clearAgentChatHistory(currentAgentId);
+        setRefreshKey(prev => prev + 1);
+      }
+    }
+  };
 
   const startEdit = (messageId: string, content: string) => {
     setEditingMessageId(messageId);
@@ -171,8 +178,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
   };
 
   const saveEdit = (messageId: string) => {
-    if (currentAgentId) {
-      // For agent chats, rebuild history with edited message
+    if (currentAgentId) { 
       const currentHistory = agentChatService.getAgentChatHistory(currentAgentId);
       const updatedHistory = currentHistory.map(msg =>
         msg.id === messageId
@@ -231,21 +237,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
 
       // Update UI with streaming message
       const updateStreamingMessage = (content: string) => {
-        // streamingMessage.content = content;
-        console.log("updating...", content)
+        // streamingMessage.content = content; 
         setStreamingMessage(content)
-        // if (currentAgentId === 'general') {
-        //   const updatedHistories = new Map(agentChatHistories);
-        //   const history = updatedHistories.get('general') || [];
-        //   const existingIndex = history.findIndex(msg => msg.id === assistantMessageId);
-        //   if (existingIndex >= 0) {
-        //     history[existingIndex] = { ...streamingMessage };
-        //   } else {
-        //     history.push(streamingMessage);
-        //   }
-        //   updatedHistories.set('general', [...history]);
-        //   setAgentChatHistories(updatedHistories);
-        // }
       };
 
       updateStreamingMessage('');
@@ -317,7 +310,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
       // Update UI with streaming message
       const updateStreamingMessage = (content: string) => {
         streamingMessage.content = content;
-        setStreamingMessage(content) 
+        setStreamingMessage(content)
       };
 
       // Add initial streaming message
@@ -364,7 +357,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
       setIsStreaming(false);
     }
   };
- 
+
   const renderMessage = (message: Message, index: number) => {
     const isUser = message.sender === 'user';
     const isStreamingMessage = isStreaming && index === displayMessages.length - 1;
@@ -484,9 +477,9 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
                       <div key={lineIndex} className="whitespace-pre-wrap">{line}</div>
                     ))
                   )}
-                  { isStreamingMessage && streamingMessage && (
-                    <div  className="whitespace-pre-wrap">{streamingMessage}</div>
-                  ) }
+                  {isStreamingMessage && streamingMessage && (
+                    <div className="whitespace-pre-wrap">{streamingMessage}</div>
+                  )}
                   {isStreamingMessage && message.content && (
                     <div className="inline-flex items-center ml-1">
                       <div className="w-2 h-4 bg-blue-400 animate-pulse rounded-sm"></div>
@@ -586,7 +579,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
               title="Export chat"
             >
               <Download className="w-4 h-4" />
-            </button>
+            </button>*/}
             
             <button
               onClick={clearAllMessages}
@@ -594,7 +587,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, agents, selectedAg
               title="Clear all messages"
             >
               <Trash2 className="w-4 h-4" />
-            </button> */}
+            </button> 
 
             <div className="flex items-center space-x-1 text-xs text-slate-400">
               <div className={`w-2 h-2 rounded-full ${'bg-green-400'}`}></div>
