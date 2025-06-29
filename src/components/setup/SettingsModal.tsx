@@ -313,7 +313,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-green-400" />
                       <span className="text-sm text-slate-300">
-                        Claude AI ready (via AWS Bedrock)
+                        AI system ready (via AWS Bedrock)
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -327,18 +327,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </div>
 
-                <div className="bg-slate-700 p-4 rounded-lg">
-                  <h4 className="text-white font-medium mb-2">Get Your Access Key</h4>
-                  <p className="text-slate-300 text-sm mb-4">
-                    Get your access key from the Asetta.xyz dashboard. Login to your account and find it in your profile section.
-                  </p>
-                  <button
-                    onClick={() => window.open('https://asetta.xyz', '_blank')}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-                  >
-                    Go to Dashboard →
-                  </button>
-                </div>
+                 
               </div>
             )}
 
@@ -401,14 +390,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           All your tokenization projects will be stored in this folder
                         </p>
                       </div>
-
-                      <div className="bg-slate-800 p-4 rounded-lg">
-                        <h5 className="text-white font-medium mb-2">Workspace Info</h5>
-                        <div className="text-sm text-slate-300 space-y-1">
-                          <div>Created: {new Date(localSettings.workspace.createdAt).toLocaleDateString()}</div>
-                          <div>Path: {localSettings.workspace.defaultFolder}</div>
-                        </div>
-                      </div>
+ 
                     </div>
                   </div>
                 ) : (
@@ -427,50 +409,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold text-white">General Settings</h3>
 
-                <div className="space-y-4">
-                  {/* <div className="flex items-center justify-between">
-                    <div>
-                      <label className="text-white font-medium">Theme</label>
-                      <p className="text-slate-400 text-sm">Choose your preferred theme</p>
-                    </div>
-                    <select
-                      value={localSettings.theme}
-                      onChange={(e) => setLocalSettings(prev => ({ ...prev, theme: e.target.value as 'dark' | 'light' }))}
-                      className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-blue-500"
-                    >
-                      <option value="dark">Dark</option>
-                      <option value="light">Light</option>
-                    </select>
-                  </div> */}
+                 
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="text-white font-medium">Auto Save</label>
-                      <p className="text-slate-400 text-sm">Automatically save changes</p>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={localSettings.autoSave}
-                      onChange={(e) => setLocalSettings(prev => ({ ...prev, autoSave: e.target.checked }))}
-                      className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="text-white font-medium">Notifications</label>
-                      <p className="text-slate-400 text-sm">Show desktop notifications</p>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={localSettings.notifications}
-                      onChange={(e) => setLocalSettings(prev => ({ ...prev, notifications: e.target.checked }))}
-                      className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="border-t border-slate-700 pt-6">
+                <div className="   ">
                   <h4 className="text-white font-medium mb-4">Data Management</h4>
                   <div className="flex gap-4 flex-wrap">
                     <button

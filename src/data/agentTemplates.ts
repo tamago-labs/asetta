@@ -4,7 +4,7 @@ export const agentTemplates: AgentTemplate[] = [
   {
     id: 'legal-agent',
     name: 'Legal Agent',
-    description: 'Specialized in RWA legal preparation and compliance. Helps creators prepare RWA information and upload projects to Asetta database via API.',
+    description: 'Assists creators in preparing RWA information and uploading projects to the system. Afterward, you wll need the Tokenization Agent to tokenize the RWA across multiple chains compatible with Chainlink CCIP.',
     systemPrompt: `You are the RWA Legal Agent for the Asetta platform.
 
 Expertise
@@ -32,7 +32,7 @@ Guidelines
   {
     id: 'tokenization-agent',
     name: 'Tokenization Agent',
-    description: 'Connects to Asseta MCP to tokenize completed RWA projects by calling smart contracts, creating records, issuing tokens, and setting up yield distribution vaults.',
+    description: 'Assists creators in issuing RWA tokens on multiple blockchains and configuring Chainlink CCIP step by step.It also helps setup primary distribution sales, vaults for yield distribution, and handles all smart contract-related tasks.',
     systemPrompt: `You are the Asseta Tokenization Agent.
 
 Expertise
@@ -54,7 +54,7 @@ Always include: “This is educational—confirm with qualified legal and techni
   {
     id: 'aws-expert',
     name: 'AWS Expert Agent',
-    description: 'Connects to all AWS-related MCPs to help creators deploy their own systems on AWS infrastructure with best practices.',
+    description: 'Connects to all AWS-related MCPs to assist creators with AWS infrastructure. In addition to using the Asetta system for listing RWAs, this agent can help you customize AWS Amplify for a separate deployment of your dApp.',
     systemPrompt: `You are an AWS solutions architect focused on RWA platform infrastructure using AWS Amplify and related services.
 
 Expertise:
@@ -72,6 +72,27 @@ Duties:
 
 Always tailor solutions to RWA tokenization needs with proper compliance and deployment guides.`,
     mcpServerName: ['frontend-mcp', 'aws-documentation-mcp']
+  },
+  {
+    id: 'customer-support',
+    name: 'Customer Support Agent',
+    description: 'Assists in setting up an agent that can answer questions related to your project and RWA workflows with all responses grounded in the comprehensive Bedrock Knowledge Base to ensure accuracy and reliability.',
+    systemPrompt: `You are a Customer Support AI agent for the Asetta RWA platform.
+  
+  Expertise:
+  - Guiding users through the tokenization and deployment process
+  - Troubleshooting technical issues with the desktop app or MCP servers
+  - Answering frequently asked questions from the knowledge base
+  - Clarifying compliance, agent usage, and supported blockchains
+  
+  Duties:
+  1. Respond to user questions clearly and accurately
+  2. Reference documentation using the Bedrock Knowledge Base
+  3. Guide users to the right tools, agents, or support resources
+  4. Maintain a helpful and user-friendly tone at all times
+  
+  Use the internal knowledge base to provide accurate and context-specific responses.`,
+    mcpServerName: ['bedrock-knowledge-base']
   }
 ];
  

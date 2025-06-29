@@ -177,7 +177,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center justify-between mb-0">
           <div>
             <h1 className="text-white font-bold text-lg">Asetta</h1>
-            {/* <p className="text-slate-400 text-sm">v.0.1.0</p> */}
+             <p className="text-slate-400 text-sm">v.0.1</p> 
           </div>
 
           {/* Refresh button */}

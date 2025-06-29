@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Building2, Key, Folder, ArrowRight, Check, AlertCircle, FolderPlus } from 'lucide-react';
+import { LogIn, Building2, Key, Folder, ArrowRight, Check, AlertCircle, FolderPlus } from 'lucide-react';
 import { SetupFormData } from '../../types/auth';
 import { TauriFileService } from '../../services/fileService';
 import { invoke } from '@tauri-apps/api/core';
@@ -26,7 +26,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
   const steps = [
     {
       id: 'welcome',
-      title: 'Welcome to Asetta.xyz',
+      title: 'Welcome to Asetta RWA Studio',
       description: 'Transform your assets into digital tokens with AI-powered assistance'
     },
     {
@@ -151,22 +151,22 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
             <div>
               <h2 className="text-3xl font-bold text-white mb-6">Welcome</h2>
               <p className="text-slate-300 text-lg leading-relaxed max-w-2xl mx-auto">
-                Transform your valuable assets into digital tokens with the power of AI.
+                Transform your valuable assets into digital tokens using multiple AI agents.
                 Real estate, commodities, art collections - all tokenized in minutes, not months.
               </p>
             </div>
             <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto text-sm">
               <div className="bg-slate-800 p-6 rounded-xl">
-                <div className="text-blue-400 font-bold text-2xl">5</div>
+                <div className="text-blue-400 font-bold text-2xl">4+</div>
                 <div className="text-slate-400">AI Agents</div>
               </div>
               <div className="bg-slate-800 p-6 rounded-xl">
-                <div className="text-green-400 font-bold text-2xl">80%</div>
-                <div className="text-slate-400">Cost Savings</div>
+                <div className="text-green-400 font-bold text-2xl">3+</div>
+                <div className="text-slate-400">Blockchains</div>
               </div>
               <div className="bg-slate-800 p-6 rounded-xl">
-                <div className="text-purple-400 font-bold text-2xl">3-4</div>
-                <div className="text-slate-400">Weeks vs Months</div>
+                <div className="text-purple-400 font-bold text-2xl">90%</div>
+                <div className="text-slate-400">Cost Saving</div>
               </div>
             </div>
           </div>
@@ -176,7 +176,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
         return (
           <div className="space-y-8">
             <div className="text-center">
-              <Key className="w-16 h-16 text-blue-400 mx-auto mb-6" />
+              <LogIn className="w-16 h-16 text-blue-400 mx-auto mb-6" />
               <h2 className="text-3xl font-bold text-white mb-3">Connect Your Account</h2>
               <p className="text-slate-300 text-lg">
                 Enter your access key from the Asetta.xyz dashboard
@@ -220,17 +220,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSetupComplete })
                 )}
               </div>
 
-              <div className="bg-slate-800 p-6 rounded-xl">
+              <div className="bg-slate-800 p-6 px-2 rounded-xl">
                 <h4 className="text-white font-medium mb-3">Don't have an access key?</h4>
                 <p className="text-slate-300 text-sm mb-4">
                   Get your access key from the Asetta.xyz dashboard. Login to your account and find it in your profile section.
-                </p>
-                <button
-                  onClick={() => window.open('https://asetta.xyz', '_blank')}
-                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
-                >
-                  Go to Dashboard →
-                </button>
+                </p> 
               </div>
             </div>
           </div>

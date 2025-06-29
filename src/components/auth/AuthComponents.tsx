@@ -167,17 +167,10 @@ export const OnboardingManager: React.FC<OnboardingManagerProps> = ({
     },
     {
       id: 'project-panel',
-      title: 'Project Tracking',
-      description: 'Monitor your tokenization progress and see what each agent is working on.',
+      title: 'File Manager',
+      description: 'Manage files in your local workspace folder and share them with AI agents.',
       selector: '[data-onboarding="project"]',
       position: 'left' as const
-    },
-    {
-      id: 'new-project',
-      title: 'Start a Project',
-      description: 'Click here to begin tokenizing your first asset.',
-      selector: '[data-onboarding="new-project"]',
-      position: 'top' as const
     }
   ];
 

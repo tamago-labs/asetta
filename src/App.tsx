@@ -23,7 +23,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(true);
   const [showMCPManager, setShowMCPManager] = useState(false);
   const [showAddAgent, setShowAddAgent] = useState(false);
 
@@ -244,16 +244,7 @@ function App() {
         >
           <HelpCircle className="w-5 h-5" />
         </button>
-
-        {/* Add Agent Button */}
-        {/* <button
-          onClick={() => setShowAddAgent(true)}
-          className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors bg-slate-800 shadow-lg"
-          title="Add New Agent"
-        >
-          <Plus className="w-5 h-5" />
-        </button> */}
-
+ 
         {/* MCP Manager Button */}
         <button
           onClick={() => setShowMCPManager(true)}
