@@ -51,7 +51,36 @@ The platform comprises several components that enable multiple AI agents to work
    ```bash
    npm run tauri build
    ```
- 
+
+### **How to Use**
+
+When accessing for the first time, you will be navigated to the welcome screen, where you will need to provide the access key. You can obtain this key from asetta.xyz after registration, it's available on your profile screen. Next, you will need to select a workspace folder, which will grant the AI agent access to all files within that folder.
+
+![Screenshot from 2025-06-30 16-30-09](https://github.com/user-attachments/assets/12dd2b05-70e1-4746-b0df-653a3922ab56)
+
+The common steps for tokenizing an RWA project with us involve importing the appropriate agents for the tasks you want to perform and ensuring that all required MCP servers for those agents are up and running.
+
+![Screenshot from 2025-06-30 16-34-36](https://github.com/user-attachments/assets/8090009c-3b25-4ffa-833b-56cc9293af7c)
+
+This multi-agent approach allows you to leverage any MCP servers available in the market with more flexibility, unlike other MCP applications that require pre-configuration before launch and often can't support importing too many MCP tools (~120 tools). 
+
+With Asetta RWA Studio, you can stop MCP servers (including tools) that are not needed, freeing up resources for other agents to work on their tasks.
+
+## Smart Contract
+
+The smart contract repo is forked from the Chainlink CCIP Kit and includes our custom contracts that enable creators to tokenize real-world assets, distribute them through primary sales, and facilitate secondary market trading across multiple blockchain networks and follows a three-step workflow: asset tokenization with cross-chain capabilities, primary distribution setup and whitelisting of eligible traders.
+
+### Core Contracts
+- **RWAToken.sol** – An ERC20 token representing fractional ownership of real-world assets with CCIP compatibility. Implements IBurnMintERC20 for cross-chain transfers and includes comprehensive asset metadata storage, including asset type, description, total value and documentation URLs.
+
+- **PrimaryDistribution.sol** – Manages primary sales and the initial distribution of RWA tokens to investors. Handles project registration from factory-created tokens, implements whitelist-based access control for investors and processes stablecoin based token purchases with configurable pricing and limits.
+
+- **RWAManager.sol** – The central orchestration contract coordinating the entire RWA token lifecycle. Manages a project workflow from token creation to primary sales activation, and tracks project status across different phases.
+
+- **RWARFQ.sol** – A simple Request-for-Quote system for secondary market trading of RWA tokens. Allows market makers to submit buy/sell quotes with specified prices and durations, and provides real-time price discovery through best bid/ask tracking.
+
+- **RWAVault.sol** – A contract for distributing yield to RWA token holders. Users stake tokens and receive share tokens in return. The RWA project distributes yield by increasing the token supply, so when users withdraw, they receive more RWA tokens back. (We're considering moving toward a cross-chain rebase token model in the future.)
+
 ## Chainlink Integration
 
 We integrate with Chainlink CCIP and have our agent handles the complex process of cross-chain token creation as follows:
