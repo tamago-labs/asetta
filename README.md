@@ -33,8 +33,8 @@ The platform comprises several components that enable multiple AI agents to work
 
 1. **Clone Repository**
    ```bash
-   git clone <repository-url>
-   cd build-your-dream
+   git clone https://github.com/tamago-labs/asetta
+   cd asetta
    ```
 
 2. **Install Dependencies**
