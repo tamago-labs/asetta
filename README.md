@@ -76,39 +76,46 @@ The main website and backend use the AWS Amplify serverless stack with Next.js
 
 Links:
 - https://github.com/tamago-labs/asetta-aws-amplify/blob/main/amplify/data/resource.ts
-
+  
 ## Deployments
 
-Ethereum Sepolia
-================================================
+### Ethereum Sepolia
 
-MockUSDC: 0xf2260B00250c772CB64606dBb88d9544F709308C
-TokenFactory: 0x6fdB032668F1F856fbC2e9F5Df348938aFBFBE17
-TestToken: 0x70aB9E637130220DD7AB16E59b83d133b77f2001
-PrimaryDistribution: 0xf309011fbf013C352849Cd4b5C85E71cC69a1EBF
-RWAManager: 0x9682DaBf26831523B21759A50b0a45832f82DBa3
-RFQ: 0x42209A0A2a3D80Ad48B7D25fC6a61ad355901484
+| Contract            | Address                                      |
+|---------------------|----------------------------------------------|
+| MockUSDC            | `0xf2260B00250c772CB64606dBb88d9544F709308C` |
+| TokenFactory        | `0x6fdB032668F1F856fbC2e9F5Df348938aFBFBE17` |
+| TestToken           | `0x70aB9E637130220DD7AB16E59b83d133b77f2001` |
+| PrimaryDistribution | `0xf309011fbf013C352849Cd4b5C85E71cC69a1EBF` |
+| RWAManager          | `0x9682DaBf26831523B21759A50b0a45832f82DBa3` |
+| RFQ                 | `0x42209A0A2a3D80Ad48B7D25fC6a61ad355901484` |
 
+---
 
-Avalanche Fuji
-================================================
+### Avalanche Fuji
 
-MockUSDC: 0x5067e9a9154A2EA674DEf639de5e98F238824039
-TokenFactory: 0xEc5003E8451EC488ea1e1a7142A38e77a5082fCf
-TestToken: 0x3bde0F6703F62801Ae6eef7A597d4e88e508551D
-PrimaryDistribution: 0x9304F30b1AEfeCB43F86fd5841C6ea75BD0F2529
-RWAManager: 0x6ee904a0Ff97b5682E80660Bf2Aca280D18aB5F3
-RFQ: 0x307992307C89216b1079C7c5Cbc4F51005b1472D
+| Contract            | Address                                      |
+|---------------------|----------------------------------------------|
+| MockUSDC            | `0x5067e9a9154A2EA674DEf639de5e98F238824039` |
+| TokenFactory        | `0xEc5003E8451EC488ea1e1a7142A38e77a5082fCf` |
+| TestToken           | `0x3bde0F6703F62801Ae6eef7A597d4e88e508551D` |
+| PrimaryDistribution | `0x9304F30b1AEfeCB43F86fd5841C6ea75BD0F2529` |
+| RWAManager          | `0x6ee904a0Ff97b5682E80660Bf2Aca280D18aB5F3` |
+| RFQ                 | `0x307992307C89216b1079C7c5Cbc4F51005b1472D` |
 
-Arbitrum Sepolia
-================================================
+---
 
-MockUSDC: 0x16EE94e3C07B24EbA6067eb9394BA70178aAc4c0
-TokenFactory: 0xe5209A4f622C6eD2C158dcCcdDB69B05f9D0E4E0
-TestToken: 0x59Dc953ED6Ffe40d4ce31c97b0eA0ECdc3061862
-PrimaryDistribution: 0xA657b300009802Be7c88617128545534aCA12dbe
-RWAManager: 0x4fd5Ae48A869c5ec0214CB050D2D713433515D8d
-RFQ: 0x61ad3Fe6B44Bfbbcec39c9FaD566538c894b6471
+### Arbitrum Sepolia
+
+| Contract            | Address                                      |
+|---------------------|----------------------------------------------|
+| MockUSDC            | `0x16EE94e3C07B24EbA6067eb9394BA70178aAc4c0` |
+| TokenFactory        | `0xe5209A4f622C6eD2C158dcCcdDB69B05f9D0E4E0` |
+| TestToken           | `0x59Dc953ED6Ffe40d4ce31c97b0eA0ECdc3061862` |
+| PrimaryDistribution | `0xA657b300009802Be7c88617128545534aCA12dbe` |
+| RWAManager          | `0x4fd5Ae48A869c5ec0214CB050D2D713433515D8d` |
+| RFQ                 | `0x61ad3Fe6B44Bfbbcec39c9FaD566538c894b6471` |
+
 
 ## License
 
